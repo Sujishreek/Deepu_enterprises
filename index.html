@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepu Enterprises — Electrical & Electronics Inventory Management System</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/print-invoice.css">
+    <!-- Favicon / Logo -->
+    <link rel="icon" type="image/png" href="assets/images/deepu-logo.png">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- ==========================================================================
+             Left-Side Vertical Navigation Sidebar (Matches Screenshots)
+             ========================================================================== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="javascript:void(0)" class="brand-wrapper" onclick="navigateTo('dashboard')">
+                    <img src="assets/images/deepu-logo.png" alt="Deepu Enterprises Logo" class="brand-logo-img">
+                    <div class="brand-info">
+                        <span class="brand-title">Deepu Enterprises</span>
+                        <span class="brand-sub">Inventory System</span>
+                    </div>
+                </a>
+                <button class="btn-sidebar-toggle" id="sidebarToggle" title="Toggle Navigation Sidebar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <!-- 1. Dashboard -->
+                <button class="nav-item active" data-view="dashboard" onclick="navigateTo('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text" data-i18n="nav_dashboard">Admin Dashboard</span>
+                </button>
+
+                <!-- 2. Products Management -->
+                <button class="nav-item" data-view="products" onclick="navigateTo('products')">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-text" data-i18n="nav_products">Products Management</span>
+                </button>
+
+                <!-- 3. Stock Management -->
+                <button class="nav-item" data-view="stock" onclick="navigateTo('stock')">
+                    <span class="nav-icon">📑</span>
+                    <span class="nav-text" data-i18n="nav_stock">Stock Management</span>
+                </button>
+
+                <!-- 4. Purchases -->
+                <button class="nav-item" data-view="purchases" onclick="navigateTo('purchases')">
+                    <span class="nav-icon">🚚</span>
+                    <span class="nav-text" data-i18n="nav_purchases">Purchase</span>
+                </button>
+
+                <!-- 5. Sales & POS Billing -->
+                <button class="nav-item" data-view="sales" onclick="navigateTo('sales')">
+                    <span class="nav-icon">🧾</span>
+                    <span class="nav-text" data-i18n="nav_sales">Sales & POS</span>
+                </button>
+
+                <!-- 6. Suppliers -->
+                <button class="nav-item" data-view="suppliers" onclick="navigateTo('suppliers')">
+                    <span class="nav-icon">🏭</span>
+                    <span class="nav-text" data-i18n="nav_suppliers">Suppliers</span>
+                </button>
+
+                <!-- 7. Customers -->
+                <button class="nav-item" data-view="customers" onclick="navigateTo('customers')">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text" data-i18n="nav_customers">Customers</span>
+                </button>
+
+                <!-- 8. Price Management -->
+                <button class="nav-item" data-view="prices" onclick="navigateTo('prices')">
+                    <span class="nav-icon">🏷️</span>
+                    <span class="nav-text" data-i18n="nav_prices">Price Management</span>
+                </button>
+
+                <!-- 9. Reports -->
+                <button class="nav-item" data-view="reports" onclick="navigateTo('reports')">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text" data-i18n="nav_reports">Reports & Analytics</span>
+                </button>
+
+                <!-- 10. Settings & Google Sheets Sync -->
+                <button class="nav-item" data-view="settings" onclick="navigateTo('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text" data-i18n="nav_settings">Settings & Sheets Sync</span>
+                </button>
+            </nav>
+
+            <!-- Sidebar User Profile Footer -->
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="user-avatar-circle">D</div>
+                    <div class="sidebar-footer-info">
+                        <span class="user-name">Deepu R.</span>
+                        <span class="user-role-chip" id="userRoleChip" title="Click to toggle role">Admin (Click to toggle)</span>
+                    </div>
+                </div>
+                <button style="background: transparent; border: none; color: #94A3B8; cursor: pointer;" title="Sign out" onclick="alert('Session active in demo mode.')">
+                    🚪
+                </button>
+            </div>
+        </aside>
+
+        <!-- ==========================================================================
+             Main Workspace & Top Navigation Bar
+             ========================================================================== -->
+        <main class="main-wrapper">
+            <!-- Topbar (Matches Screenshots 1, 2, 3, 4) -->
+            <header class="topbar">
+                <!-- Smart Multilingual & Tanglish Search -->
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="globalSearchInput" class="search-input" placeholder="Search product, SKU, invoice, customer, rack... (e.g. 'syska', 'vayar', 'ಬಲ್ಬ್')">
+                    </div>
+                    <!-- Autocomplete Suggestions Flyout -->
+                    <div id="searchSuggestions" class="search-suggestions-dropdown"></div>
+                </div>
+
+                <!-- Right Actions: Language Switch, Live Sync Badge, Bell, User Profile -->
+                <div class="topbar-actions">
+                    <!-- Google Sheets Live Sync Indicator -->
+                    <div class="sync-status-pill" onclick="navigateTo('settings')" title="Google Sheets synchronization active">
+                        <span class="sync-pulse-dot"></span>
+                        <span id="syncPillLabel">Sheets Sync Ready</span>
+                    </div>
+
+                    <!-- Bilingual English / Kannada Language Switcher -->
+                    <button class="btn-lang-toggle" id="langToggleBtn" title="Switch language to English / Kannada">
+                        🌐 ಕನ್ನಡ
+                    </button>
+
+                    <!-- Notifications Bell with Low Stock Counter -->
+                    <button style="background: none; border: none; font-size: 1.25rem; cursor: pointer; position: relative;" onclick="navigateTo('stock')" title="Stock alerts">
+                        🔔
+                        <span style="position: absolute; top: -2px; right: -4px; width: 8px; height: 8px; background: #EF4444; border-radius: 50%;"></span>
+                    </button>
+
+                    <!-- User Pill -->
+                    <div class="user-dropdown-btn">
+                        <div class="user-avatar-circle" style="width: 28px; height: 28px; font-size: 0.75rem;">DR</div>
+                        <span style="font-size: 0.88rem; font-weight: 600;">Deepu R.</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dynamic View Body Container -->
+            <div id="mainContent" class="content-area">
+                <!-- Rendered dynamically by app.js -->
+            </div>
+        </main>
+    </div>
+
+    <!-- ==========================================================================
+         Modals: Product Add/Edit, Stock Adjust, Print Invoice
+         ========================================================================== -->
+
+    <!-- 1. Product Add / Edit Modal (Matches Screenshot 5) -->
+    <div id="productModal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" id="prodModalTitle">Add New Product</h3>
+                <button class="modal-close-btn" onclick="closeModal('productModal')">&times;</button>
+            </div>
+            <form id="addProductForm" onsubmit="handleProductFormSubmit(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="prodFormId">
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Select Rack (R1 - R20)</label>
+                            <select id="prodFormRack" class="form-control" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Select Category</label>
+                            <select id="prodFormCategory" class="form-control" required></select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Product Name (English)</label>
+                            <input type="text" id="prodFormNameEn" class="form-control" placeholder="e.g. Syska 9W LED Bulb Cool Day Light" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Product Name (Kannada / ಕನ್ನಡ)</label>
+                            <input type="text" id="prodFormNameTa" class="form-control" placeholder="எ.கா. சிஸ்கா 9வாட் எல்.இ.டி பல்பு">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Brand</label>
+                            <select id="prodFormBrand" class="form-control" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Model Number / Spec</label>
+                            <input type="text" id="prodFormModel" class="form-control" placeholder="e.g. SSK-SRL-9W">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">SKU / Barcode</label>
+                            <input type="text" id="prodFormSku" class="form-control" placeholder="e.g. SYS-9W-LED" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Unit of Measurement</label>
+                            <select id="prodFormUnit" class="form-control">
+                                <option value="Piece">Piece (எண்ணிக்கை)</option>
+                                <option value="Coil">Coil (சுருள் / ரோல்)</option>
+                                <option value="Meter">Meter (மீட்டர்)</option>
+                                <option value="Box">Box (பெட்டி)</option>
+                                <option value="Pack">Pack (பாக்கெட்)</option>
+                                <option value="Set">Set (செட்)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Purchase Price (Cost ₹)</label>
+                            <input type="number" step="0.01" id="prodFormPP" class="form-control" placeholder="65.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Selling Price (Retail ₹)</label>
+                            <input type="number" step="0.01" id="prodFormSP" class="form-control" placeholder="110.00" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Wholesale Price (₹)</label>
+                            <input type="number" step="0.01" id="prodFormWP" class="form-control" placeholder="95.00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Opening Stock Quantity</label>
+                            <input type="number" id="prodFormStock" class="form-control" placeholder="100" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Low Stock Alert Level</label>
+                            <input type="number" id="prodFormMinStock" class="form-control" value="15">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Product Image URL</label>
+                            <input type="url" id="prodFormImage" class="form-control" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description & Technical Details</label>
+                        <textarea id="prodFormDesc" class="form-control" rows="2" placeholder="e.g. 9 Watt B22 LED Bulb, 6500K Cool Daylight, 900 Lumens"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('productModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Quick Stock Adjustment Modal -->
+    <div id="stockAdjustModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3 class="modal-title">⚡ Quick Stock Adjustment</h3>
+                <button class="modal-close-btn" onclick="closeModal('stockAdjustModal')">&times;</button>
+            </div>
+            <form id="stockAdjustForm" onsubmit="handleStockAdjustSubmit(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="stockAdjustProdId">
+                    <div style="background: var(--surface-subtle); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+                        <div style="font-weight: 700; font-size: 1rem;" id="stockAdjustProdName">Product Name</div>
+                        <div style="color: var(--text-muted); font-size: 0.88rem; margin-top: 0.2rem;">Current Stock: <b id="stockAdjustCurrent" style="color: var(--primary-indigo);">0</b></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Adjustment Type</label>
+                        <select id="stockAdjustType" class="form-control">
+                            <option value="Stock In">📥 Stock In / Inward Lot (+)</option>
+                            <option value="Stock Out">📤 Stock Out / Deduction (-)</option>
+                            <option value="Damaged">⚠️ Damaged Stock Replacement (-)</option>
+                            <option value="Return">↩️ Customer Return (+)</option>
+                            <option value="Adjustment">⚙️ Audit Physical Count Correction</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Quantity to Add / Deduct</label>
+                        <input type="number" id="stockAdjustDelta" class="form-control" placeholder="10" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Reason / Reference</label>
+                        <input type="text" id="stockAdjustReason" class="form-control" placeholder="e.g. Counter manual stock reconciliation">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('stockAdjustModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Stock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Professional Tax Invoice Printable Modal -->
+    <div id="invoicePrintModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 780px;">
+            <div class="modal-header no-print">
+                <h3 class="modal-title">🧾 Tax Invoice Preview</h3>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-primary btn-sm" onclick="printCurrentInvoice()">🖨️ Print / Save PDF</button>
+                    <button class="modal-close-btn" onclick="closeModal('invoicePrintModal')">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body" id="invoiceModalBody" style="padding: 0;">
+                <!-- Dynamically populated invoice HTML -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/i18n.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

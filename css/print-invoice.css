@@ -1,0 +1,118 @@
+/* ==========================================================================
+   Print Invoice Stylesheet
+   Deepu Enterprises Electrical & Electronics
+   ========================================================================== */
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #invoicePrintModal, #invoicePrintModal * {
+        visibility: visible;
+    }
+    #invoicePrintModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: #fff;
+    }
+    .no-print {
+        display: none !important;
+    }
+}
+
+.invoice-box {
+    background: #fff;
+    padding: 2rem;
+    font-size: 14px;
+    line-height: 20px;
+    color: #1a1a1a;
+}
+
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 2px solid #2563EB;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.invoice-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0F172A;
+    text-transform: uppercase;
+}
+
+.invoice-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+.invoice-table th {
+    background: #F1F5F9;
+    color: #334155;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: 1px solid #E2E8F0;
+}
+
+.invoice-table td {
+    padding: 8px 12px;
+    border: 1px solid #E2E8F0;
+    font-size: 13px;
+}
+
+.invoice-summary-box {
+    width: 280px;
+    margin-left: auto;
+    margin-bottom: 2rem;
+}
+
+.invoice-summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+}
+
+.invoice-total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 16px;
+    font-weight: 800;
+    border-top: 2px solid #0F172A;
+    border-bottom: 2px solid #0F172A;
+    margin-top: 6px;
+}
+
+.invoice-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #E2E8F0;
+}
+
+.signature-line {
+    border-top: 1px solid #64748B;
+    width: 180px;
+    text-align: center;
+    padding-top: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}

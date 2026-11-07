@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#159b52">
+  <meta name="description" content="Deepu Enterprises – B2B distribution, hardware, agro products and consumer goods.">
+  <title>Deepu Enterprises | Distribution & Supply</title>
+  <link rel="icon" href="assets/images/deepu-logo.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="#home"><img src="assets/images/deepu-logo.png" alt="Deepu Enterprises logo"><span>DE<small>ENTERPRISES & DISTRIBUTORS</small></span></a>
+  <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button>
+  <nav id="mainNav">
+    <a href="#home">Home</a><a href="#about">About</a><a href="#catalog">Catalog</a>
+    <a href="#brands">Brands</a><a href="#logistics">Logistics</a><a href="#dealer">Become a Dealer</a><a href="#contact">Contact</a>
+  </nav>
+  <div class="header-actions"><button class="btn btn-outline" data-view="dealer-login">Dealer Login</button><button class="btn btn-primary" data-view="inquiry">My Inquiry <b id="cartCount">0</b></button></div>
+</header>
+
+<main>
+<section id="home" class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow">YOUR TRUSTED DISTRIBUTION PARTNER</span>
+    <h1>Supplying businesses.<br><em>Strengthening</em> relationships.</h1>
+    <p>One dependable destination for hardware, plumbing, electrical, agro and everyday consumer products.</p>
+    <div class="hero-actions"><a class="btn btn-primary btn-lg" href="#catalog">Explore Catalog <span>→</span></a><a class="btn btn-light btn-lg" href="#dealer">Become a Dealer</a></div>
+    <div class="hero-note"><span class="status-dot"></span> Serving Channarayapatna and surrounding regions</div>
+  </div>
+  <div class="hero-art">
+    <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+    <div class="hero-logo"><img src="assets/images/deepu-logo.png" alt="Deepu Enterprises"></div>
+    <div class="floating-card"><strong>One partner.</strong><span>Many supply needs.</span></div>
+  </div>
+</section>
+
+<section class="trust-strip">
+  <div><strong>15+ <small>Years</small></strong><span>Experience*</span></div>
+  <div><strong>500+ <small>Retailers</small></strong><span>Network*</span></div>
+  <div><strong>24 <small>Hours</small></strong><span>Delivery promise*</span></div>
+  <div class="trust-disclaimer">*Figures and service claims shown for demonstration; confirm before publishing.</div>
+</section>
+
+<section id="about" class="section about-section">
+  <div class="section-kicker">ABOUT DEEPU ENTERPRISES</div>
+  <div class="section-heading"><h2>Built on trust.<br><em>Driven by service.</em></h2><p>Deepu Enterprises is presented as a distribution and supply partner based in Channarayapatna, Karnataka. We connect retailers and businesses with a practical range of products and responsive local support.</p></div>
+  <div class="about-grid">
+    <div class="about-panel"><div class="panel-mark">D</div><h3>Dependable supply, closer to your business.</h3><p>Our focus is straightforward: useful product choices, clear communication and dependable distribution support.</p></div>
+    <div class="value-card"><span>01</span><h3>Reliable sourcing</h3><p>Multiple product lines in one place.</p></div>
+    <div class="value-card"><span>02</span><h3>Retailer-first service</h3><p>Responsive support for business customers.</p></div>
+    <div class="value-card"><span>03</span><h3>Local distribution</h3><p>Coverage planning around Hassan district.</p></div>
+  </div>
+</section>
+
+<section id="catalog" class="section catalog-section">
+  <div class="section-kicker">PRODUCT CATALOG</div>
+  <div class="section-heading"><h2>Find what your<br><em>business needs.</em></h2><p>Explore sample catalog items. Wholesale prices are shared after inquiry or dealer approval.</p></div>
+  <div class="catalog-tools"><input id="productSearch" type="search" placeholder="Search products, SKU or brand…"><select id="categoryFilter"><option value="">All categories</option></select><select id="brandFilter"><option value="">All brands</option></select></div>
+  <div class="category-pills" id="categoryPills"></div>
+  <div class="product-grid" id="productGrid"></div>
+  <div class="center"><button class="btn btn-outline" id="showMore">Show all products</button></div>
+</section>
+
+<section id="brands" class="section brand-section">
+  <div class="section-kicker">BRANDS & SUPPLY PARTNERS</div>
+  <div class="section-heading"><h2>A growing network<br><em>of product partners.</em></h2><p>Brand names below are illustrative demo records only. Confirm actual distribution authorizations with the company before publication.</p></div>
+  <div class="brand-grid" id="brandGrid"></div>
+</section>
+
+<section id="logistics" class="section logistics-section">
+  <div class="section-kicker">DISTRIBUTION & LOGISTICS</div>
+  <div class="section-heading"><h2>Local knowledge.<br><em>Planned delivery.</em></h2><p>Coverage areas displayed from the existing company website. Actual delivery days, serviceability and 24-hour eligibility must be confirmed.</p></div>
+  <div class="logistics-layout">
+    <div class="route-card"><div class="route-top"><span class="route-icon">⌖</span><div><b>Primary hub</b><strong>Channarayapatna</strong><small>Hassan District, Karnataka</small></div></div><div class="route-line"></div><div class="route-list" id="routeList"></div><p class="small-muted">Coverage list is not a guarantee of daily service or a physical branch at each location.</p></div>
+    <div class="coverage-card"><div class="map-visual"><div class="map-grid"></div><div class="map-center">DE</div><span class="map-pin pin-a">Hassan</span><span class="map-pin pin-b">Arsikere</span><span class="map-pin pin-c">Belur</span><span class="map-pin pin-d">Alur</span><span class="map-pin pin-e">Sakleshpur</span><span class="map-pin pin-f">Arkalgud</span><span class="map-pin pin-g">Holenarasipura</span></div><div class="map-caption"><b>Hassan district coverage overview</b><span>Illustrative schematic, not a navigational map.</span></div></div>
+  </div>
+</section>
+
+<section id="dealer" class="section dealer-section">
+  <div class="dealer-banner"><div><div class="section-kicker light">GROW WITH DEEPU ENTERPRISES</div><h2>Let’s build a stronger<br><em>business relationship.</em></h2><p>Apply to become a retail or sub-dealer partner. Our team can review your details and contact you.</p></div><a href="#dealerForm" class="btn btn-light btn-lg">Apply for dealership →</a></div>
+  <form class="form-card" id="dealerForm"><div><h3>Dealer application</h3><p>Submit your shop and contact information.</p></div><div class="form-grid">
+    <label>Contact person<input name="contactName" required maxlength="100"></label><label>Shop / business name<input name="businessName" required maxlength="140"></label>
+    <label>Mobile number<input name="phone" required pattern="[6-9][0-9]{9}" placeholder="10-digit mobile"></label><label>Email<input name="email" type="email"></label>
+    <label>GSTIN (if registered)<input name="gstin" maxlength="15" pattern="[0-9A-Za-z]{15}" placeholder="15-character GSTIN"></label><label>City / town<input name="city" required></label>
+    <label class="full">Shop address<textarea name="address" rows="3" required></textarea></label><label class="full">Products of interest<input name="interest" placeholder="Hardware, pipes, agro products…"></label>
+  </div><label class="consent"><input type="checkbox" required> I agree to be contacted regarding this dealership application.</label><button class="btn btn-primary" type="submit">Submit application</button><p class="form-message" id="dealerMessage" aria-live="polite"></p></form>
+</section>
+
+<section id="contact" class="section contact-section">
+  <div class="section-kicker">CONTACT US</div><div class="section-heading"><h2>Let’s talk<br><em>business.</em></h2><p>For product availability, bulk requirements and dealership enquiries, contact the team.</p></div>
+  <div class="contact-grid"><div class="contact-info"><div class="contact-item"><span>✉</span><div><small>OFFICIAL EMAIL</small><a href="mailto:contact@deepuenterprises.com">contact@deepuenterprises.com</a></div></div><div class="contact-item"><span>⌖</span><div><small>BUSINESS LOCATION</small><b>D Kalenahalli Gate, Channarayapatna,<br>Hassan District, Karnataka</b></div></div><div class="contact-item"><span>◎</span><div><small>WHATSAPP</small><b>Number to be configured by the company</b></div></div></div>
+  <form class="form-card contact-form" id="contactForm"><h3>Send an enquiry</h3><label>Your name<input name="name" required></label><label>Phone number<input name="phone" required></label><label>Email<input name="email" type="email"></label><label>Enquiry type<select name="type"><option>General</option><option>Product Enquiry</option><option>Bulk Order</option><option>Distribution</option></select></label><label>Message<textarea name="message" rows="4" required></textarea></label><button class="btn btn-primary">Send enquiry</button><p class="form-message" id="contactMessage" aria-live="polite"></p></form></div>
+</section>
+</main>
+
+<footer class="footer"><div class="footer-brand"><img src="assets/images/deepu-logo.png" alt=""><div><b>DE DEEPU ENTERPRISES</b><small>BEST CHOICE FOR ADHESIVES</small></div></div><p>Distribution and supply support for retailers and businesses.</p><div class="footer-bottom"><span>© <span id="year"></span> Deepu Enterprises. All rights reserved.</span><span>contact@deepuenterprises.com</span><button class="text-button" data-view="admin-login">Admin</button></div></footer>
+<a class="whatsapp-float" id="whatsappLink" href="#" target="_blank" rel="noopener" aria-label="WhatsApp">◔</a>
+
+<div class="modal-backdrop" id="modalBackdrop"><section class="modal" role="dialog" aria-modal="true"><button class="modal-close" id="modalClose" aria-label="Close">×</button><div id="modalContent"></div></section></div>
+<div class="toast" id="toast" role="status"></div>
+<script src="js/app.js"></script>
+</body></html>

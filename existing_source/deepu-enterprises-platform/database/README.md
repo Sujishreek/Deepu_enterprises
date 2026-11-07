@@ -1,0 +1,1 @@
+The included SQL file is a reference schema for a future MySQL migration. The active starter backend uses Google Sheets through Apps Script. All rows are demo data; brand/distributor relationships are not verified.
