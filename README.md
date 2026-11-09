@@ -10,9 +10,6 @@ deepu-enterprises/
 ```
 
 ## Run
-Double-click `START-WINDOWS.bat` (or run `./START-MAC-LINUX.sh`), then open
-- Website: http://localhost:8000/user/
-- Admin:   http://localhost:8000/admin/ — reached through the **Admin** link in the website footer.
   Demo login: `admin@deepu.local` / `Demo@12345`
 
 Always run through the local server (not by double-clicking the HTML files) — the website and admin share data through the browser's localStorage, which requires the same origin.
