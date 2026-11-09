@@ -15,10 +15,10 @@ class InventoryService:
         cur = conn.cursor()
 
         sql = """
-            SELECT p.*, 
-                   c.name as category_name, c.name_ta as category_name_ta,
+            SELECT p.*, p.name_ta as name_kn,
+                   c.name as category_name, c.name_ta as category_name_kn,
                    b.name as brand_name,
-                   r.name as rack_name, r.name_ta as rack_name_ta
+                   r.name as rack_name, r.name_ta as rack_name_kn
             FROM products p
             LEFT JOIN categories c ON p.category_id = c.category_id
             LEFT JOIN brands b ON p.brand_id = b.brand_id
@@ -58,10 +58,10 @@ class InventoryService:
         conn = get_connection()
         cur = conn.cursor()
         sql = """
-            SELECT p.*, 
-                   c.name as category_name, c.name_ta as category_name_ta,
+            SELECT p.*, p.name_ta as name_kn,
+                   c.name as category_name, c.name_ta as category_name_kn,
                    b.name as brand_name,
-                   r.name as rack_name, r.name_ta as rack_name_ta
+                   r.name as rack_name, r.name_ta as rack_name_kn
             FROM products p
             LEFT JOIN categories c ON p.category_id = c.category_id
             LEFT JOIN brands b ON p.brand_id = b.brand_id
@@ -79,7 +79,7 @@ class InventoryService:
 
         pid = data.get("product_id") or ("P" + str(uuid.uuid4().hex[:6]).upper())
         name = data.get("name", "").strip()
-        name_ta = data.get("name_ta", "").strip() or name
+        name_ta = (data.get("name_kn") or data.get("name_ta") or "").strip() or name
         sku = data.get("sku", "").strip() or ("SKU-" + pid)
         barcode = data.get("barcode", "").strip()
         category_id = data.get("category_id")
@@ -177,7 +177,7 @@ class InventoryService:
             WHERE product_id = ?
         """, (
             data.get("name"),
-            data.get("name_ta"),
+            (data.get("name_kn") or data.get("name_ta")),
             data.get("sku"),
             data.get("barcode"),
             data.get("category_id"),
@@ -284,7 +284,7 @@ class InventoryService:
         conn = get_connection()
         cur = conn.cursor()
         sql = """
-            SELECT m.*, p.name as product_name, p.name_ta as product_name_ta, p.sku, p.unit
+            SELECT m.*, p.name as product_name, p.name_ta as product_name_kn, p.sku, p.unit
             FROM stock_movements m
             JOIN products p ON m.product_id = p.product_id
             ORDER BY m.created_at DESC
