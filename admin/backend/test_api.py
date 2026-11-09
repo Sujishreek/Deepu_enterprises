@@ -25,8 +25,8 @@ def run_tests():
     print("Search 'vayar' found:", len(res2), [p["name"] for p in res2[:2]])
     assert len(res2) > 0
 
-    res3 = search_products(all_prods, "பல்பு")
-    print("Search Tamil 'bulb' found:", len(res3), [p["name"] for p in res3[:2]])
+    res3 = search_products(all_prods, "ಬಲ್ಬ್")
+    print("Search Kannada 'bulb' found:", len(res3), [p["name"] for p in res3[:2]])
     assert len(res3) > 0
 
     print("Testing Sale creation and inventory decrement...")
