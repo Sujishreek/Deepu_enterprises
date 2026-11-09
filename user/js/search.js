@@ -4,51 +4,39 @@
  */
 
 const SearchEngine = {
-    // Tanglish Phonetic Synonym Dictionary for Electrical & Electronics Goods
+    // Kannada-script and Tanglish phonetic synonyms for electrical products.
     SYNONYMS: {
-        // Bulbs & Lighting
-        "bulb": ["bulb", "bulbu", "balb", "pelbu", "lightu", "laight", "பல்பு", "விளக்கு"],
-        "led": ["led", "el e di", "el.e.di", "எல்.இ.டி", "எல்இடி"],
-        "tube": ["tube", "tubelight", "toob", "toobulaight", "டியூப்", "குழல்"],
-        "downlight": ["downlight", "down light", "daun laight", "டவுன்லைட்"],
-        "panel": ["panel", "panal", "paenal", "பேனல்"],
-        "lamp": ["lamp", "laampu", "விளக்கு", "தீபம்"],
-
-        // Wires & Cables
-        "wire": ["wire", "vayar", "vaayar", "vaiyer", "vaiyaru", "kambi", "கம்பி", "வயர்", "ஒயர்"],
-        "cable": ["cable", "kabel", "kaybil", "keppil", "கேபிள்", "வடம்"],
-        "copper": ["copper", "koppar", "kappar", "செம்பு", "தாமிரம்"],
-
-        // Switches & Accessories
-        "switch": ["switch", "suvich", "suwitch", "suvitch", "swich", "சுவிட்ச்", "பொத்தான்"],
-        "socket": ["socket", "saaket", "saakket", "plug point", "சாக்கெட்"],
-        "plug": ["plug", "pilak", "pilaku", "பிளக்"],
-        "regulator": ["regulator", "fan speed", "ரெகுலேட்டர்"],
-
-        // Circuit Protection
-        "mcb": ["mcb", "emcebee", "breaker", "பிரேக்கர்", "எம்.சி.பி"],
-        "fuse": ["fuse", "fyoos", "pyoos", "kattu", "ஃப்யூஸ்"],
-        "isolator": ["isolator", "aisolator", "ஐசோலேட்டர்"],
-
-        // Fans & Ventilation
-        "fan": ["fan", "faan", "pan", "kaathadi", "katradi", "மின் விசிறி", "விசிறி", "ஃபேன்"],
-        "exhaust": ["exhaust", "egaas", "egaast", "புகை போக்கி", "எக்ஸாஸ்ட்"],
-
-        // Tools & Tape
-        "plier": ["plier", "cutting plier", "katting playar", "பிளேயர்", "இடுக்கட்டி"],
-        "tester": ["tester", "testar", "laing testar", "டெஸ்டர்"],
-        "tape": ["tape", "tepu", "insulation tape", "செல்லோடேப்", "டேப்"],
-
-        // Brands
-        "philips": ["philips", "filips", "philps", "felips", "பிலிப்ஸ்"],
-        "syska": ["syska", "siska", "cyska", "sysca", "சிஸ்கா"],
-        "havells": ["havells", "havels", "havelz", "ஹேவல்ஸ்"],
-        "crompton": ["crompton", "krompton", "cromptan", "கிராம்ப்டன்"],
-        "finolex": ["finolex", "finolekz", "fino", "பினோலெக்ஸ்"],
-        "anchor": ["anchor", "aankar", "angkar", "enkar", "ஆங்கர்"],
-        "polycab": ["polycab", "policab", "polikab", "பாலிகேப்"],
-        "bajaj": ["bajaj", "bajaaj", "பஜாஜ்"],
-        "legrand": ["legrand", "legraand", "லெக்ராண்ட்"]
+        "bulb": ["bulb", "bulbu", "balb", "pelbu", "lightu", "laight", "ಬಲ್ಬ್", "ಬಲ್ಬು", "ದೀಪ"],
+        "led": ["led", "el e di", "el.e.di", "ಎಲ್ ಇ ಡಿ", "ಎಲ್ಇಡಿ"],
+        "tube": ["tube", "tubelight", "toob", "toobulaight", "ಟ್ಯೂಬ್", "ಟ್ಯೂಬ್ ಲೈಟ್"],
+        "downlight": ["downlight", "down light", "daun laight", "ಡೌನ್‌ಲೈಟ್"],
+        "panel": ["panel", "panal", "paenal", "ಪ್ಯಾನೆಲ್"],
+        "lamp": ["lamp", "laampu", "ದೀಪ", "ಲ್ಯಾಂಪ್"],
+        "wire": ["wire", "vayar", "vaayar", "vaiyer", "vaiyaru", "kambi", "ತಂತಿ", "ತಂತಿಗಳು", "ವೈರ್"],
+        "cable": ["cable", "kabel", "kaybil", "keppil", "ಕೇಬಲ್", "ತಂತಿ"],
+        "copper": ["copper", "koppar", "kappar", "ತಾಮ್ರ", "ಕಾಪರ್"],
+        "switch": ["switch", "suvich", "suwitch", "suvitch", "swich", "ಸ್ವಿಚ್", "ಗುಂಡಿ"],
+        "socket": ["socket", "saaket", "saakket", "plug point", "ಸಾಕೆಟ್"],
+        "plug": ["plug", "pilak", "pilaku", "ಪ್ಲಗ್"],
+        "regulator": ["regulator", "fan speed", "ರೆಗ್ಯುಲೇಟರ್"],
+        "mcb": ["mcb", "emcebee", "breaker", "ಬ್ರೇಕರ್", "ಎಂಸಿಬಿ"],
+        "fuse": ["fuse", "fyoos", "pyoos", "kattu", "ಫ್ಯೂಸ್"],
+        "isolator": ["isolator", "aisolator", "ಐಸೋಲೇಟರ್"],
+        "rccb": ["rccb", "elcb", "shock", "ಅರ್ಥ್ ಲೀಕೇಜ್"],
+        "fan": ["fan", "faan", "pan", "kaathadi", "katradi", "ಫ್ಯಾನ್", "ಗಾಳಿ ಬೀಸಣಿಗೆ"],
+        "exhaust": ["exhaust", "egaas", "egaast", "ಹೊಗೆ ಹೊರಹಾಕುವ ಫ್ಯಾನ್", "ಎಕ್ಸಾಸ್ಟ್"],
+        "plier": ["plier", "cutting plier", "katting playar", "ಪ್ಲಯರ್", "ಕಟಿಂಗ್ ಪ್ಲಯರ್"],
+        "tester": ["tester", "testar", "laing testar", "ಟೆಸ್ಟರ್"],
+        "tape": ["tape", "tepu", "insulation tape", "ಇನ್ಸುಲೇಷನ್ ಟೇಪ್", "ಟೇಪ್"],
+        "philips": ["philips", "filips", "philps", "felips", "ಫಿಲಿಪ್ಸ್"],
+        "syska": ["syska", "siska", "cyska", "sysca", "ಸಿಸ್ಕಾ"],
+        "havells": ["havells", "havels", "havelz", "ಹ್ಯಾವೆಲ್ಸ್"],
+        "crompton": ["crompton", "krompton", "cromptan", "ಕ್ರಾಂಪ್ಟನ್"],
+        "finolex": ["finolex", "finolekz", "fino", "ಫಿನೋಲೆಕ್ಸ್"],
+        "anchor": ["anchor", "aankar", "angkar", "enkar", "ಆಂಕರ್"],
+        "polycab": ["polycab", "policab", "polikab", "ಪಾಲಿಕ್ಯಾಬ್"],
+        "bajaj": ["bajaj", "bajaaj", "ಬಜಾಜ್"],
+        "legrand": ["legrand", "legraand", "ಲೆಗ್ರಾಂಡ್"]
     },
 
     // Levenshtein string distance algorithm for spelling typos
