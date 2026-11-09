@@ -84,14 +84,14 @@ class GoogleSheetsSyncService:
                    min_stock_level, is_active, updated_at
             FROM products ORDER BY rack_id, name
         """).fetchall()
-        p_headers = ["ID", "Name (EN)", "Name (TA)", "SKU", "Barcode", "Category", "Rack", "Brand",
+        p_headers = ["ID", "Name (EN)", "Name (Kannada)", "SKU", "Barcode", "Category", "Rack", "Brand",
                      "Unit", "Purchase Price", "Selling Price", "Wholesale Price", "Stock Quantity",
                      "Min Stock Level", "Active", "Last Updated"]
         payload["Products"] = [p_headers] + [list(r) for r in prods]
 
         # 2. Racks Sheet
         racks = cur.execute("SELECT rack_id, name, name_ta, icon, category_id, capacity_pct, status, description FROM racks").fetchall()
-        r_headers = ["Rack ID", "Name", "Tamil Name", "Icon", "Category", "Capacity %", "Status", "Description"]
+        r_headers = ["Rack ID", "Name", "Kannada Name", "Icon", "Category", "Capacity %", "Status", "Description"]
         payload["Racks"] = [r_headers] + [list(r) for r in racks]
 
         # 3. Sales Sheet
