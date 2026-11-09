@@ -42,15 +42,24 @@ const API = {
         const remote = await this.callAppsScript("getAllData");
         const local = LocalDB.load();
 
-        if (remote && remote.products && remote.products.length) {
-            local.products = remote.products;
-            if (remote.sales) local.sales = remote.sales;
-            if (remote.suppliers) local.suppliers = remote.suppliers;
-            if (remote.customers) local.customers = remote.customers;
+        if (remote && typeof remote === "object") {
+            ["products", "racks", "categories", "brands", "sales", "purchases", "suppliers", "customers", "movements"].forEach(key => {
+                if (Array.isArray(remote[key])) local[key] = remote[key];
+            });
+            if (remote.settings && typeof remote.settings === "object") local.settings = remote.settings;
             LocalDB.save(local);
-            return local;
         }
         return local;
+    },
+
+    async getRemoteSales() {
+        const remote = await this.callAppsScript("getAllData");
+        if (!remote || !Array.isArray(remote.sales)) return null;
+
+        const db = LocalDB.load();
+        db.sales = remote.sales;
+        LocalDB.save(db);
+        return remote.sales;
     },
 
     // 2. Products CRUD
@@ -94,6 +103,17 @@ const API = {
 
         // Remote push
         this.callAppsScript("saveProduct", { product });
+        return product;
+    },
+
+    async updatePrices(productId, prices) {
+        const db = LocalDB.load();
+        const product = db.products.find(item => item.product_id === productId);
+        if (!product) throw new Error("Product not found");
+
+        Object.assign(product, prices);
+        LocalDB.save(db);
+        await this.callAppsScript("updatePrices", { product_id: productId, prices });
         return product;
     },
 

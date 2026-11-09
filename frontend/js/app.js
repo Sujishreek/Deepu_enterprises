@@ -20,7 +20,6 @@ const STATE = {
     selectedRack: null,
     selectedBrand: null,
     productViewMode: "grid", // 'grid' or 'table'
-    userRole: sessionStorage.getItem("deepu_role") || "Admin"
 };
 
 // ----------------- Initialization -----------------
@@ -69,6 +68,8 @@ function setupRealtimeSync() {
 // ----------------- Navigation & Routing -----------------
 
 function navigateTo(viewName, params = {}) {
+    if (viewName === "customers") viewName = "dashboard";
+
     STATE.currentView = viewName;
     if (params.rackId) STATE.selectedRack = params.rackId;
     if (params.brandId) STATE.selectedBrand = params.brandId;
@@ -97,16 +98,13 @@ window.renderCurrentView = function() {
             renderSalesView();
             break;
         case "stock":
-            renderStockView();
+            renderStockAlertsView();
             break;
         case "purchases":
             renderPurchasesView();
             break;
         case "suppliers":
             renderSuppliersView();
-            break;
-        case "customers":
-            renderCustomersView();
             break;
         case "prices":
             renderPricesView();
@@ -956,60 +954,64 @@ function setupPOSCartListeners() {
     }
 }
 
-// ----------------- View 4: Stock Management & Audit Trail -----------------
+// ----------------- View 4: Stock Alerts -----------------
 
-async function renderStockView() {
+async function renderStockAlertsView() {
     const container = document.getElementById("mainContent");
-    const isKn = CURRENT_LANG === "kn";
+    let products;
+    try {
+        products = await API.getProducts();
+    } catch (error) {
+        console.error("Stock alerts failed to load:", error);
+        API.showToast(error.message, "error");
+        return;
+    }
 
-    const movsRes = await API.getMovements(60);
-    const movements = movsRes.data || [];
+    STATE.products = products;
+    const alerts = products
+        .map(product => {
+            const minStockValue = Number(product.min_stock_level);
+            const minStock = product.min_stock_level === null || product.min_stock_level === undefined || product.min_stock_level === "" || !Number.isFinite(minStockValue)
+                ? 15
+                : minStockValue;
+            return { ...product, minStock, currentStock: Number(product.stock_quantity || 0) };
+        })
+        .filter(product => product.currentStock <= product.minStock)
+        .sort((a, b) => a.currentStock - b.currentStock);
 
-    const rows = movements.map(m => `
-        <tr>
-            <td>${m.created_at}</td>
-            <td>
-                <b>${isKn ? (m.product_name_kn || m.product_name) : m.product_name}</b>
-                <br><small style="color: var(--text-muted);">${m.sku}</small>
-            </td>
-            <td><span class="chip-payment ${m.quantity >= 0 ? 'cash' : 'bank'}">${m.movement_type}</span></td>
-            <td><b style="color: ${m.quantity >= 0 ? 'var(--success-green)' : 'var(--danger-red)'};">${m.quantity >= 0 ? '+' : ''}${m.quantity} ${m.unit || 'pcs'}</b></td>
-            <td>${m.previous_stock}</td>
-            <td><b>${m.new_stock}</b></td>
-            <td><code>${m.reference_id || '—'}</code></td>
-            <td>${m.reason || '—'}</td>
-            <td><small>${m.performed_by || 'Admin'}</small></td>
-        </tr>
-    `).join("") || `<tr><td colspan="9" style="text-align: center; padding: 2rem;">No stock movement records.</td></tr>`;
+    const rows = alerts.map(product => {
+        const outOfStock = product.currentStock <= 0;
+        const unit = product.unit || "Piece";
+        return `
+            <tr>
+                <td><b>${product.name}</b></td>
+                <td>${product.minStock} ${unit}</td>
+                <td><b>${product.currentStock} ${unit}</b></td>
+                <td><span class="badge-stock ${outOfStock ? "out" : "low"}">${outOfStock ? t("status_out_of_stock") : t("status_low_stock")}</span></td>
+            </tr>
+        `;
+    }).join("") || `<tr><td colspan="4" style="text-align: center; padding: 2rem;">${t("stock_alert_empty")}</td></tr>`;
 
     container.innerHTML = `
         <div class="page-header">
             <div class="page-title-group">
-                <h1>📦 ${t('stock_title')}</h1>
-                <p>${isKn ? "சரக்கு இருப்பு மாற்றங்கள், ரசீதுகள் மற்றும் தணிக்கை வரலாறு" : "Complete audit history of stock adjustments, receipts, sales and damages."}</p>
-            </div>
-            <div class="page-header-actions">
-                <button class="btn btn-primary" onclick="openQuickAdjustStockModal()">⚡ ${t('btn_adjust_stock')}</button>
+                <h1>🔔 ${t("stock_title")}</h1>
+                <p>${t("stock_alert_subtitle")}</p>
             </div>
         </div>
 
         <div class="table-card">
             <div class="table-header-bar">
-                <span class="table-header-title">📜 ${isKn ? "இருப்பு மாற்ற வரலாறு" : "Stock Movement Audit Log"}</span>
+                <span class="table-header-title">⚠️ ${t("stock_alert_table_title")}</span>
             </div>
             <div style="overflow-x: auto;">
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>${t('col_mov_date')}</th>
-                            <th>${t('col_mov_prod')}</th>
-                            <th>${t('col_mov_type')}</th>
-                            <th>${t('col_mov_delta')}</th>
-                            <th>${t('col_mov_prev')}</th>
-                            <th>${t('col_mov_after')}</th>
-                            <th>${t('col_mov_ref')}</th>
-                            <th>${t('col_mov_reason')}</th>
-                            <th>${t('col_mov_user')}</th>
+                            <th>${t("stock_alert_product")}</th>
+                            <th>${t("stock_alert_minimum")}</th>
+                            <th>${t("stock_alert_current")}</th>
+                            <th>${t("col_status")}</th>
                         </tr>
                     </thead>
                     <tbody>${rows}</tbody>
@@ -1126,64 +1128,6 @@ async function renderSuppliersView() {
                             <th>City</th>
                             <th>Balance Due</th>
                             <th>Total Orders</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-            </div>
-        </div>
-    `;
-}
-
-async function renderCustomersView() {
-    const container = document.getElementById("mainContent");
-    const isKn = CURRENT_LANG === "kn";
-
-    const res = await API.getCustomers();
-    const customers = res.data || [];
-
-    const rows = customers.map(c => `
-        <tr>
-            <td><b>${c.name}</b></td>
-            <td><b>${c.phone}</b></td>
-            <td>${c.business_name || 'Retail Client'}</td>
-            <td><span class="chip-payment ${c.customer_type === 'Wholesale' ? 'upi' : 'cash'}">${c.customer_type}</span></td>
-            <td>${c.city || '—'}</td>
-            <td><b style="color: ${c.credit_balance > 0 ? 'var(--danger-red)' : 'var(--text-primary)'};">₹ ${c.credit_balance.toLocaleString('en-IN')}</b></td>
-            <td>${c.total_orders || 0}</td>
-            <td>
-                <div style="display: flex; gap: 0.4rem;">
-                    <button class="btn btn-outline btn-sm" onclick="openEditCustomerModal('${c.customer_id}')">✏️</button>
-                    <button class="btn btn-outline-red btn-sm" onclick="confirmDeleteCustomer('${c.customer_id}')">🗑️</button>
-                </div>
-            </td>
-        </tr>
-    `).join("") || `<tr><td colspan="8" style="text-align: center; padding: 2rem;">No customers found.</td></tr>`;
-
-    container.innerHTML = `
-        <div class="page-header">
-            <div class="page-title-group">
-                <h1>👥 ${t('cust_title')}</h1>
-                <p>${isKn ? "சில்லறை மற்றும் மொத்த வாடிக்கையாளர் கடன் ஏடு" : "Retail electricians, contractors and wholesale buyer accounts."}</p>
-            </div>
-            <div class="page-header-actions">
-                <button class="btn btn-primary" onclick="openAddCustomerModal()">+ ${t('btn_add_customer')}</button>
-            </div>
-        </div>
-
-        <div class="table-card">
-            <div style="overflow-x: auto;">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Customer Name</th>
-                            <th>Phone</th>
-                            <th>Business Name</th>
-                            <th>Type</th>
-                            <th>City</th>
-                            <th>Credit Ledger</th>
-                            <th>Lifetime Orders</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -1413,12 +1357,19 @@ async function saveShopSettings(e) {
 
 function openModal(modalId) {
     const el = document.getElementById(modalId);
-    if (el) el.classList.add("open");
+    if (!el) return;
+    el.classList.add("open");
+    document.body.classList.add("modal-open");
+    const body = el.querySelector(".modal-body");
+    if (body) body.scrollTop = 0;
+    el.querySelector(".modal-body input:not([type='hidden']), .modal-body select, .modal-body textarea")?.focus({ preventScroll: true });
 }
 
 function closeModal(modalId) {
     const el = document.getElementById(modalId);
-    if (el) el.classList.remove("open");
+    if (!el) return;
+    el.classList.remove("open");
+    if (!document.querySelector(".modal-backdrop.open")) document.body.classList.remove("modal-open");
 }
 
 function openAddProductModal() {
@@ -1556,7 +1507,7 @@ async function handleStockAdjustSubmit(e) {
         closeModal("stockAdjustModal");
         if (STATE.currentView === "products") renderProductsView();
         if (STATE.currentView === "dashboard") renderDashboardView();
-        if (STATE.currentView === "stock") renderStockView();
+        if (STATE.currentView === "stock") renderStockAlertsView();
     } catch (err) {
         API.showToast(err.message, "error");
     }
@@ -1687,17 +1638,7 @@ function setupEventListeners() {
         });
     }
 
-    // Role switcher
-    const roleChip = document.getElementById("userRoleChip");
-    if (roleChip) {
-        roleChip.addEventListener("click", () => {
-            const newRole = STATE.userRole === "Admin" ? "Staff" : "Admin";
-            STATE.userRole = newRole;
-            sessionStorage.setItem("deepu_role", newRole);
-            roleChip.textContent = newRole;
-            API.showToast(`Switched role to ${newRole}`, "success");
-        });
-    }
+    setupUserProfileMenu();
 
     // Smart Multilingual & Tanglish Universal Search
     const searchInput = document.getElementById("globalSearchInput");
@@ -1731,6 +1672,37 @@ function setupEventListeners() {
             }
         });
     }
+}
+
+function setupUserProfileMenu() {
+    const menu = document.getElementById("userProfileMenu");
+    const trigger = document.getElementById("userProfileButton");
+    const dropdown = document.getElementById("userProfileDropdown");
+    if (!menu || !trigger || !dropdown) return;
+
+    const setOpen = isOpen => {
+        dropdown.hidden = !isOpen;
+        trigger.setAttribute("aria-expanded", String(isOpen));
+    };
+
+    trigger.addEventListener("click", () => setOpen(dropdown.hidden));
+    document.addEventListener("click", event => {
+        if (!menu.contains(event.target)) setOpen(false);
+    });
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && !dropdown.hidden) {
+            setOpen(false);
+            trigger.focus();
+        }
+    });
+}
+
+function handleDemoSignOut() {
+    sessionStorage.removeItem("deepu_role");
+    document.getElementById("userProfileDropdown").hidden = true;
+    document.getElementById("userProfileButton").setAttribute("aria-expanded", "false");
+    navigateTo("dashboard");
+    API.showToast("Signed out of the demo session.", "success");
 }
 
 function renderSearchSuggestions(sug, query) {

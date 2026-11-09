@@ -13,17 +13,16 @@ Built strictly using:
 
 ### 1. Left-Side Vertical Navigation Sidebar (Matches Reference Screenshots)
 - Replaced top navigation bar with a modern dark navy (`#0B132B`) vertical sidebar with collapsed and expanded modes.
-- 10 complete modules:
+- 9 complete modules:
   1. **Admin Dashboard** (`📊`): 4 KPI cards (Total Stock, Low Stock, In-Stock, Total Valuation), Sales & Stock trend line charts, Top-Selling Products leaderboard, and Recent Transactions table.
   2. **Products Management** (`📦`): 4-column visual card grid (matching Screenshot 2) & inventory list table (matching Screenshot 4), brand pills filter (`[Philips]`, `[Syska]`, `[Crompton]`, `[Bajaj]`, `[Havells]`, `[Finolex]`, `[Anchor]`, `[Legrand]`, `[Polycab]`), Rack filter, and full CRUD.
-  3. **Stock Management** (`📑`): Quick stock adjustment modal, low-stock & out-of-stock alerts, and full stock movement audit history log.
+  3. **Stock Alerts** (`🔔`): Products at or below their minimum stock level, with current quantity and low/out-of-stock status.
   4. **Purchase Management** (`🚚`): Inward purchase order creation, supplier procurement, automatic stock increments and cost price updating.
   5. **Sales & POS Billing** (`🧾`): Fast counter billing, cart summary, discount %, GST rate calculation, Cash / UPI / Bank Transfer / Credit ledger, and professional printable tax invoice generation.
   6. **Suppliers** (`🏭`): Authorized distributor profiles, contact information, GSTIN, and balance payables.
-  7. **Customers** (`👥`): Retail and wholesale electrician / contractor customer accounts with credit balance ledger.
-  8. **Price & Margin Management** (`🏷️`): Cost price vs selling price vs wholesale price, profit margin % calculation, markup amount, and instant price updating.
-  9. **Reports & Financial Analytics** (`📈`): Sales reports, stock valuation report, profit & loss estimate, and one-click CSV export.
-  10. **Settings & Google Sheets Sync** (`⚙️`): Connect your Google Apps Script Web App URL, test live sync, and manage shop profile for invoices.
+  7. **Price & Margin Management** (`🏷️`): Cost price vs selling price vs wholesale price, profit margin % calculation, markup amount, and instant price updating.
+  8. **Reports & Financial Analytics** (`📈`): Sales reports, stock valuation report, profit & loss estimate, and one-click CSV export.
+  9. **Settings & Google Sheets Sync** (`⚙️`): Connect your Google Apps Script Web App URL, test live sync, and manage shop profile for invoices.
 
 ---
 

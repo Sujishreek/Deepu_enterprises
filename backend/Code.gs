@@ -14,15 +14,15 @@
 
 const SHEETS = {
   Products: [
-    "product_id", "name", "name_ta", "sku", "barcode", "category_id", "rack_id", "brand_id",
+    "product_id", "name", "name_kn", "sku", "barcode", "category_id", "rack_id", "rack_cell", "brand_id",
     "model_number", "unit", "purchase_price", "selling_price", "wholesale_price",
     "stock_quantity", "min_stock_level", "image_url", "description", "is_active", "updated_at"
   ],
   Racks: [
-    "rack_id", "name", "name_ta", "icon", "category_id", "capacity_pct", "status", "description"
+    "rack_id", "name", "name_kn", "icon", "category_id", "capacity_pct", "status", "description"
   ],
   Categories: [
-    "category_id", "name", "name_ta", "slug", "description", "rack_id", "display_order", "is_active"
+    "category_id", "name", "name_kn", "slug", "description", "rack_id", "display_order", "is_active"
   ],
   Brands: [
     "brand_id", "name", "description", "logo_icon", "is_active"
@@ -160,8 +160,28 @@ function getSheet(sheetName) {
   return sheet;
 }
 
-function getSheetObjects(sheetName) {
+function ensureSheetSchema(sheetName) {
+  const schema = SHEETS[sheetName] || [];
   const sheet = getSheet(sheetName);
+  if (!schema.length) return sheet;
+
+  const lastColumn = sheet.getLastColumn();
+  if (!lastColumn) {
+    sheet.getRange(1, 1, 1, schema.length).setValues([schema]);
+    sheet.setFrozenRows(1);
+    return sheet;
+  }
+
+  const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+  const missingHeaders = schema.filter(header => headers.indexOf(header) === -1);
+  if (missingHeaders.length) {
+    sheet.getRange(1, lastColumn + 1, 1, missingHeaders.length).setValues([missingHeaders]);
+  }
+  return sheet;
+}
+
+function getSheetObjects(sheetName) {
+  const sheet = ensureSheetSchema(sheetName);
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) return [];
   const headers = data[0];
@@ -176,14 +196,14 @@ function getSheetObjects(sheetName) {
 }
 
 function appendSheetRow(sheetName, obj) {
-  const sheet = getSheet(sheetName);
-  const headers = SHEETS[sheetName];
+  const sheet = ensureSheetSchema(sheetName);
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const row = headers.map(h => obj[h] === undefined ? "" : obj[h]);
   sheet.appendRow(row);
 }
 
 function updateSheetRow(sheetName, keyField, keyValue, updatedFields) {
-  const sheet = getSheet(sheetName);
+  const sheet = ensureSheetSchema(sheetName);
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) return false;
   const headers = data[0];
@@ -522,44 +542,44 @@ function setupDatabase() {
   // Seed 20 Electrical Racks
   const racksSheet = ss.getSheetByName("Racks");
   const racks = [
-    ["R1", "Bulbs", "பல்புகள்", "lightbulb", "C_BULBS", 95, "Active", "LED Bulbs, Incandescent, Smart Bulbs"],
-    ["R2", "Wires", "கம்பிகள் / ஒயர்கள்", "cable", "C_WIRES", 89, "Active", "Copper wire coils, FR wires"],
-    ["R3", "Switches", "சுவிட்சுகள்", "toggle-right", "C_SWITCH", 90, "Active", "Modular switches, sockets"],
-    ["R4", "Cables", "கேபிள்கள்", "git-commit", "C_CABLES", 88, "Active", "Industrial heavy-duty cables"],
-    ["R5", "Sockets", "சாக்கெட்டுகள்", "plug", "C_SOCKET", 76, "Active", "3-pin, 2-pin universal sockets"],
-    ["R6", "Fuses", "ஃப்யூஸ்கள்", "shield-alert", "C_FUSE", 70, "Active", "Rewirable kit-kat fuses"],
-    ["R7", "MCBs", "எம்.சி.பி", "cpu", "C_MCB", 68, "Active", "Miniature circuit breakers, isolators"],
-    ["R8", "LEDs", "எல்.இ.டி", "sun", "C_LEDS", 92, "Active", "LED panels, downlights"],
-    ["R9", "Fans", "மின் விசிறிகள்", "wind", "C_FANS", 22, "Active", "Ceiling fans, exhaust fans"],
-    ["R10", "Lighting", "விளக்குகள்", "lamp", "C_LIGHT", 98, "Active", "Decorative fixtures, floodlights"],
-    ["R11", "Junction Box", "ஜங்ஷன் பாக்ஸ்", "square", "C_JBOX", 65, "Active", "Concealed & surface boxes"],
-    ["R12", "Tools", "கருவிகள்", "wrench", "C_TOOLS", 11, "Active", "Pliers, testers, screwdrivers"],
-    ["R13", "Hardware", "வன்பொருள்", "hammer", "C_HARDWARE", 85, "Active", "Screws, clips, wall plugs"],
-    ["R14", "Raw Material", "மூலப்பொருட்கள்", "box", "C_RAW", 75, "Active", "Insulation PVC, copper terminals"],
-    ["R15", "Panels", "பேனல்கள்", "layers", "C_PANELS", 76, "Active", "Distribution boards, panel boxes"],
-    ["R16", "Sensors", "சென்சார்கள்", "radio", "C_SENSORS", 40, "Active", "Motion sensors, dusk-to-dawn"],
-    ["R17", "Motors", "மோட்டார்கள்", "disc", "C_MOTORS", 55, "Active", "Submersible water pump motors"],
-    ["R18", "Batteries", "பேட்டரிகள்", "battery-charging", "C_BATTERY", 60, "Active", "Inverter batteries, dry cells"],
-    ["R19", "Connectors", "இணைப்பிகள்", "link", "C_CONNECT", 85, "Active", "Terminal blocks, wire caps"],
-    ["R20", "Safety Gear", "பாதுகாப்பு சாதனங்கள்", "shield", "C_SAFETY", 60, "Active", "Insulated gloves, helmets"]
+    ["R1", "Bulbs", "ಬಲ್ಬ್‌ಗಳು", "lightbulb", "C_BULBS", 95, "Active", "LED Bulbs, Incandescent, Smart Bulbs"],
+    ["R2", "Wires", "ತಂತಿಗಳು", "cable", "C_WIRES", 89, "Active", "Copper wire coils, FR wires"],
+    ["R3", "Switches", "ಸ್ವಿಚ್‌ಗಳು", "toggle-right", "C_SWITCH", 90, "Active", "Modular switches, sockets"],
+    ["R4", "Cables", "ಕೇಬಲ್‌ಗಳು", "git-commit", "C_CABLES", 88, "Active", "Industrial heavy-duty cables"],
+    ["R5", "Sockets", "ಸಾಕೆಟ್‌ಗಳು", "plug", "C_SOCKET", 76, "Active", "3-pin, 2-pin universal sockets"],
+    ["R6", "Fuses", "ಫ್ಯೂಸ್‌ಗಳು", "shield-alert", "C_FUSE", 70, "Active", "Rewirable kit-kat fuses"],
+    ["R7", "MCBs", "ಎಂಸಿಬಿಗಳು", "cpu", "C_MCB", 68, "Active", "Miniature circuit breakers, isolators"],
+    ["R8", "LEDs", "ಎಲ್‌ಇಡಿಗಳು", "sun", "C_LEDS", 92, "Active", "LED panels, downlights"],
+    ["R9", "Fans", "ಫ್ಯಾನ್‌ಗಳು", "wind", "C_FANS", 22, "Active", "Ceiling fans, exhaust fans"],
+    ["R10", "Lighting", "ಬೆಳಕಿನ ಸಾಧನಗಳು", "lamp", "C_LIGHT", 98, "Active", "Decorative fixtures, floodlights"],
+    ["R11", "Junction Box", "ಜಂಕ್ಷನ್ ಬಾಕ್ಸ್", "square", "C_JBOX", 65, "Active", "Concealed & surface boxes"],
+    ["R12", "Tools", "ಉಪಕರಣಗಳು", "wrench", "C_TOOLS", 11, "Active", "Pliers, testers, screwdrivers"],
+    ["R13", "Hardware", "ಹಾರ್ಡ್‌ವೇರ್", "hammer", "C_HARDWARE", 85, "Active", "Screws, clips, wall plugs"],
+    ["R14", "Raw Material", "ಕಚ್ಚಾ ವಸ್ತುಗಳು", "box", "C_RAW", 75, "Active", "Insulation PVC, copper terminals"],
+    ["R15", "Panels", "ಪ್ಯಾನೆಲ್‌ಗಳು", "layers", "C_PANELS", 76, "Active", "Distribution boards, panel boxes"],
+    ["R16", "Sensors", "ಸಂವೇದಕಗಳು", "radio", "C_SENSORS", 40, "Active", "Motion sensors, dusk-to-dawn"],
+    ["R17", "Motors", "ಮೋಟಾರ್‌ಗಳು", "disc", "C_MOTORS", 55, "Active", "Submersible water pump motors"],
+    ["R18", "Batteries", "ಬ್ಯಾಟರಿಗಳು", "battery-charging", "C_BATTERY", 60, "Active", "Inverter batteries, dry cells"],
+    ["R19", "Connectors", "ಕನೆಕ್ಟರ್‌ಗಳು", "link", "C_CONNECT", 85, "Active", "Terminal blocks, wire caps"],
+    ["R20", "Safety Gear", "ಸುರಕ್ಷತಾ ಸಾಧನಗಳು", "shield", "C_SAFETY", 60, "Active", "Insulated gloves, helmets"]
   ];
   racksSheet.getRange(2, 1, racks.length, racks[0].length).setValues(racks);
 
   // Seed Categories
   const catsSheet = ss.getSheetByName("Categories");
   const cats = [
-    ["C_BULBS", "Bulbs & Lamps", "பல்புகள் மற்றும் விளக்குகள்", "bulbs", "All LED, CFL and filament bulbs", "R1", 1, 1],
-    ["C_WIRES", "Wires & Conduits", "கம்பிகள் மற்றும் குழாய்கள்", "wires", "House wiring, PVC conduits", "R2", 2, 1],
-    ["C_SWITCH", "Switches & Accessories", "சுவிட்சுகள் மற்றும் பாகங்கள்", "switches", "Modular & non-modular switches", "R3", 3, 1],
-    ["C_CABLES", "Industrial Cables", "தொழில்துறை கேபிள்கள்", "cables", "Submersible flat & armored cables", "R4", 4, 1],
-    ["C_SOCKET", "Sockets & Plugs", "சாக்கெட்டுகள் மற்றும் பிளக்ஸ்", "sockets", "Wall sockets, industrial plugs", "R5", 5, 1],
-    ["C_FUSE", "Fuses & Protection", "ஃப்யூஸ்கள் மற்றும் பாதுகாப்பு", "fuses", "Kit-kat fuses and safety protection", "R6", 6, 1],
-    ["C_MCB", "Circuit Breakers (MCB/DB)", "சர்க்யூட் பிரேக்கர்கள்", "mcb", "Single pole, double pole MCBs", "R7", 7, 1],
-    ["C_LEDS", "LED Panels & Downlights", "எல்.இ.டி பேனல்கள்", "leds", "Ceiling downlights, slim panels", "R8", 8, 1],
-    ["C_FANS", "Fans & Ventilation", "மின் விசிறிகள்", "fans", "High-speed ceiling fans and exhausts", "R9", 9, 1],
-    ["C_LIGHT", "Decorative & Commercial", "அலங்கார விளக்குகள்", "lighting", "Gate lights, floodlights and battens", "R10", 10, 1],
-    ["C_TOOLS", "Electrician Tools", "எலக்ட்ரீஷியன் கருவிகள்", "tools", "Professional multimeters, pliers", "R12", 11, 1],
-    ["C_PANELS", "Distribution Boards", "டிஸ்ட்ரிபியூஷன் போர்டுகள்", "panels", "Metal and plastic enclosures", "R15", 12, 1]
+    ["C_BULBS", "Bulbs & Lamps", "ಬಲ್ಬ್‌ಗಳು ಮತ್ತು ದೀಪಗಳು", "bulbs", "All LED, CFL and filament bulbs", "R1", 1, 1],
+    ["C_WIRES", "Wires & Conduits", "ತಂತಿಗಳು ಮತ್ತು ಕಂಡ್ಯೂಟ್‌ಗಳು", "wires", "House wiring, PVC conduits", "R2", 2, 1],
+    ["C_SWITCH", "Switches & Accessories", "ಸ್ವಿಚ್‌ಗಳು ಮತ್ತು ಪರಿಕರಗಳು", "switches", "Modular & non-modular switches", "R3", 3, 1],
+    ["C_CABLES", "Industrial Cables", "ಕೈಗಾರಿಕಾ ಕೇಬಲ್‌ಗಳು", "cables", "Submersible flat & armored cables", "R4", 4, 1],
+    ["C_SOCKET", "Sockets & Plugs", "ಸಾಕೆಟ್‌ಗಳು ಮತ್ತು ಪ್ಲಗ್‌ಗಳು", "sockets", "Wall sockets, industrial plugs", "R5", 5, 1],
+    ["C_FUSE", "Fuses & Protection", "ಫ್ಯೂಸ್‌ಗಳು ಮತ್ತು ರಕ್ಷಣೆ", "fuses", "Kit-kat fuses and safety protection", "R6", 6, 1],
+    ["C_MCB", "Circuit Breakers (MCB/DB)", "ಸರ್ಕ್ಯೂಟ್ ಬ್ರೇಕರ್‌ಗಳು", "mcb", "Single pole, double pole MCBs", "R7", 7, 1],
+    ["C_LEDS", "LED Panels & Downlights", "ಎಲ್‌ಇಡಿ ಪ್ಯಾನೆಲ್‌ಗಳು ಮತ್ತು ಡೌನ್‌ಲೈಟ್‌ಗಳು", "leds", "Ceiling downlights, slim panels", "R8", 8, 1],
+    ["C_FANS", "Fans & Ventilation", "ಫ್ಯಾನ್‌ಗಳು ಮತ್ತು ಗಾಳಿಯ ಹರಿವು", "fans", "High-speed ceiling fans and exhausts", "R9", 9, 1],
+    ["C_LIGHT", "Decorative & Commercial", "ಅಲಂಕಾರಿಕ ಮತ್ತು ವಾಣಿಜ್ಯ ಬೆಳಕು", "lighting", "Gate lights, floodlights and battens", "R10", 10, 1],
+    ["C_TOOLS", "Electrician Tools", "ವಿದ್ಯುತ್ ತಜ್ಞರ ಉಪಕರಣಗಳು", "tools", "Professional multimeters, pliers", "R12", 11, 1],
+    ["C_PANELS", "Distribution Boards", "ವಿದ್ಯುತ್ ವಿತರಣಾ ಬೋರ್ಡ್‌ಗಳು", "panels", "Metal and plastic enclosures", "R15", 12, 1]
   ];
   catsSheet.getRange(2, 1, cats.length, cats[0].length).setValues(cats);
 
@@ -582,18 +602,18 @@ function setupDatabase() {
   // Seed Products
   const prodsSheet = ss.getSheetByName("Products");
   const prods = [
-    ["P101", "Syska 9W LED Bulb Cool Day Light", "சிஸ்கா 9வாட் எல்.இ.டி பல்பு", "SYS-9W-LED", "890123456001", "C_BULBS", "R1", "B_SYSKA", "SSK-SRL-9W", "Piece", 65.0, 110.0, 95.0, 250, 25, "https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200", "9 Watt B22 LED Bulb", 1, new Date().toISOString()],
-    ["P102", "Philips 9W LED Bulb Stellar Bright", "பிலிப்ஸ் 9வாட் எல்.இ.டி பல்பு", "PHI-9W-LED", "890123456002", "C_BULBS", "R1", "B_PHILIPS", "PHIL-B22-9W", "Piece", 70.0, 120.0, 105.0, 180, 20, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200", "Philips Stellar Bright 9W LED Bulb", 1, new Date().toISOString()],
-    ["P103", "Crompton EcoFit LED Tube 18W", "கிராம்ப்டன் 18வாட் டியூப் லைட்", "CRO-18W-TUB", "890123456003", "C_BULBS", "R1", "B_CROMPTON", "CR-TUB-18W", "Piece", 120.0, 210.0, 180.0, 120, 15, "https://images.unsplash.com/photo-1517991104123-1d56a6e81ed9?w=200", "4 feet 18W LED Batten Tube Light", 1, new Date().toISOString()],
-    ["P104", "Bajaj 9W LED Bulb White Crystal", "பஜாஜ் 9வாட் எல்.இ.டி பல்பு", "BAJ-9W-LED", "890123456004", "C_BULBS", "R1", "B_BAJAJ", "BJ-LED-9W", "Piece", 60.0, 105.0, 90.0, 15, 20, "https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200", "Energy efficient B22 bulb", 1, new Date().toISOString()],
-    ["P105", "Havells 12W LED Bulb Adore", "ஹேவல்ஸ் 12வாட் எல்.இ.டி பல்பு", "HAV-12W-LED", "890123456005", "C_BULBS", "R1", "B_HAVELLS", "HAV-ADR-12W", "Piece", 95.0, 160.0, 140.0, 85, 15, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200", "Havells 12W bright LED bulb", 1, new Date().toISOString()],
-    ["P106", "Finolex 2.5sqmm FR House Wire (90m)", "பினோலெக்ஸ் 2.5 சதுர மி.மீ வயர்", "FIN-2.5-WIR", "890123456006", "C_WIRES", "R2", "B_FINOLEX", "FIN-FR-25", "Coil", 1150.0, 1550.0, 1420.0, 480, 50, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "100% pure electrolytic copper wire", 1, new Date().toISOString()],
-    ["P107", "Finolex 1.5sqmm FR House Wire (90m)", "பினோலெக்ஸ் 1.5 சதுர மி.மீ வயர்", "FIN-1.5-WIR", "890123456007", "C_WIRES", "R2", "B_FINOLEX", "FIN-FR-15", "Coil", 780.0, 1050.0, 960.0, 320, 40, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "1.5 sq mm copper wire", 1, new Date().toISOString()],
-    ["P108", "Polycab 4.0sqmm Heavy Duty Wire (90m)", "பாலிகேப் 4.0 சதுர மி.மீ வயர்", "POL-4.0-WIR", "890123456008", "C_WIRES", "R2", "B_POLYCAB", "POL-FR-40", "Coil", 1750.0, 2350.0, 2150.0, 110, 20, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "4 sq mm wire for AC circuits", 1, new Date().toISOString()],
-    ["P110", "Havells Fabio 6A 1-Way Modular Switch", "ஹேவல்ஸ் 6A சுவிட்ச்", "HAV-6A-SW1", "890123456010", "C_SWITCH", "R3", "B_HAVELLS", "FAB-6A-1W", "Piece", 24.0, 42.0, 35.0, 420, 50, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Gloss white 6 Amp modular switch", 1, new Date().toISOString()],
-    ["P114", "Havells 12W LED Slim Panel Round", "ஹேவல்ஸ் 12வாட் எல்.இ.டி பேனல்", "HAV-12W-PAN", "890123456014", "C_LEDS", "R8", "B_HAVELLS", "12WH8N-PANEL", "Piece", 190.0, 350.0, 290.0, 115, 20, "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=200", "12W Round Slim Recessed Panel", 1, new Date().toISOString()],
-    ["P117", "Schneider 16A Single Pole C-Curve MCB", "ஷ்னைடர் 16A ஒற்றை துருவ MCB", "SCH-16A-MCB", "890123456017", "C_MCB", "R7", "B_LEGRAND", "A9K-16A", "Piece", 110.0, 190.0, 160.0, 140, 20, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200", "C-Curve 16A Single Pole MCB", 1, new Date().toISOString()],
-    ["P120", "Crompton Hill Briz 1200mm Ceiling Fan", "கிராம்ப்டன் 1200மி.மீ சீலிங் ஃபேன்", "CRO-1200-FAN", "890123456020", "C_FANS", "R9", "B_CROMPTON", "HB-1200-BRW", "Piece", 1250.0, 1850.0, 1650.0, 60, 10, "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200", "1200mm high air delivery fan", 1, new Date().toISOString()]
+    ["P101", "Syska 9W LED Bulb Cool Day Light", "ಸಿಸ್ಕಾ 9W LED ಬಲ್ಬ್", "SYS-9W-LED", "890123456001", "C_BULBS", "R1", "B_SYSKA", "SSK-SRL-9W", "Piece", 65.0, 110.0, 95.0, 250, 25, "https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200", "9 Watt B22 LED Bulb", 1, new Date().toISOString()],
+    ["P102", "Philips 9W LED Bulb Stellar Bright", "ಫಿಲಿಪ್ಸ್ 9W LED ಬಲ್ಬ್", "PHI-9W-LED", "890123456002", "C_BULBS", "R1", "B_PHILIPS", "PHIL-B22-9W", "Piece", 70.0, 120.0, 105.0, 180, 20, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200", "Philips Stellar Bright 9W LED Bulb", 1, new Date().toISOString()],
+    ["P103", "Crompton EcoFit LED Tube 18W", "ಕ್ರಾಂಪ್ಟನ್ 18W LED ಟ್ಯೂಬ್ ಲೈಟ್", "CRO-18W-TUB", "890123456003", "C_BULBS", "R1", "B_CROMPTON", "CR-TUB-18W", "Piece", 120.0, 210.0, 180.0, 120, 15, "https://images.unsplash.com/photo-1517991104123-1d56a6e81ed9?w=200", "4 feet 18W LED Batten Tube Light", 1, new Date().toISOString()],
+    ["P104", "Bajaj 9W LED Bulb White Crystal", "ಬಜಾಜ್ 9W LED ಬಲ್ಬ್", "BAJ-9W-LED", "890123456004", "C_BULBS", "R1", "B_BAJAJ", "BJ-LED-9W", "Piece", 60.0, 105.0, 90.0, 15, 20, "https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200", "Energy efficient B22 bulb", 1, new Date().toISOString()],
+    ["P105", "Havells 12W LED Bulb Adore", "ಹ್ಯಾವೆಲ್ಸ್ 12W LED ಬಲ್ಬ್", "HAV-12W-LED", "890123456005", "C_BULBS", "R1", "B_HAVELLS", "HAV-ADR-12W", "Piece", 95.0, 160.0, 140.0, 85, 15, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200", "Havells 12W bright LED bulb", 1, new Date().toISOString()],
+    ["P106", "Finolex 2.5sqmm FR House Wire (90m)", "ಫಿನೋಲೆಕ್ಸ್ 2.5 ಚ.ಮೀ FR ಮನೆ ತಂತಿ", "FIN-2.5-WIR", "890123456006", "C_WIRES", "R2", "B_FINOLEX", "FIN-FR-25", "Coil", 1150.0, 1550.0, 1420.0, 480, 50, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "100% pure electrolytic copper wire", 1, new Date().toISOString()],
+    ["P107", "Finolex 1.5sqmm FR House Wire (90m)", "ಫಿನೋಲೆಕ್ಸ್ 1.5 ಚ.ಮೀ FR ಮನೆ ತಂತಿ", "FIN-1.5-WIR", "890123456007", "C_WIRES", "R2", "B_FINOLEX", "FIN-FR-15", "Coil", 780.0, 1050.0, 960.0, 320, 40, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "1.5 sq mm copper wire", 1, new Date().toISOString()],
+    ["P108", "Polycab 4.0sqmm Heavy Duty Wire (90m)", "ಪಾಲಿಕ್ಯಾಬ್ 4.0 ಚ.ಮೀ ಹೆವಿ ಡ್ಯೂಟಿ ತಂತಿ", "POL-4.0-WIR", "890123456008", "C_WIRES", "R2", "B_POLYCAB", "POL-FR-40", "Coil", 1750.0, 2350.0, 2150.0, 110, 20, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "4 sq mm wire for AC circuits", 1, new Date().toISOString()],
+    ["P110", "Havells Fabio 6A 1-Way Modular Switch", "ಹ್ಯಾವೆಲ್ಸ್ ಫ್ಯಾಬಿಯೋ 6A ಮಾಡ್ಯುಲರ್ ಸ್ವಿಚ್", "HAV-6A-SW1", "890123456010", "C_SWITCH", "R3", "B_HAVELLS", "FAB-6A-1W", "Piece", 24.0, 42.0, 35.0, 420, 50, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Gloss white 6 Amp modular switch", 1, new Date().toISOString()],
+    ["P114", "Havells 12W LED Slim Panel Round", "ಹ್ಯಾವೆಲ್ಸ್ 12W LED ಸ್ಲಿಮ್ ಪ್ಯಾನೆಲ್", "HAV-12W-PAN", "890123456014", "C_LEDS", "R8", "B_HAVELLS", "12WH8N-PANEL", "Piece", 190.0, 350.0, 290.0, 115, 20, "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=200", "12W Round Slim Recessed Panel", 1, new Date().toISOString()],
+    ["P117", "Schneider 16A Single Pole C-Curve MCB", "ಷ್ನೈಡರ್ 16A ಸಿಂಗಲ್ ಪೋಲ್ MCB", "SCH-16A-MCB", "890123456017", "C_MCB", "R7", "B_LEGRAND", "A9K-16A", "Piece", 110.0, 190.0, 160.0, 140, 20, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200", "C-Curve 16A Single Pole MCB", 1, new Date().toISOString()],
+    ["P120", "Crompton Hill Briz 1200mm Ceiling Fan", "ಕ್ರಾಂಪ್ಟನ್ ಹಿಲ್ ಬ್ರಿಜ್ 1200mm ಸೀಲಿಂಗ್ ಫ್ಯಾನ್", "CRO-1200-FAN", "890123456020", "C_FANS", "R9", "B_CROMPTON", "HB-1200-BRW", "Piece", 1250.0, 1850.0, 1650.0, 60, 10, "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200", "1200mm high air delivery fan", 1, new Date().toISOString()]
   ];
   prodsSheet.getRange(2, 1, prods.length, prods[0].length).setValues(prods);
 

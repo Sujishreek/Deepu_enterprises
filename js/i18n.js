@@ -10,14 +10,13 @@ const I18N = {
         app_tagline: "Electrical & Electronics Inventory System",
         nav_dashboard: "Admin Dashboard",
         nav_products: "Products Management",
-        nav_stock: "Stock Management",
+        nav_stock: "Stock Alert",
         nav_purchases: "Purchase",
         nav_sales: "Sales & POS",
         nav_suppliers: "Suppliers",
-        nav_customers: "Customers",
         nav_prices: "Price Management",
         nav_reports: "Reports & Analytics",
-        nav_settings: "Settings & Sheets Sync",
+        nav_settings: "Settings",
         nav_logout: "Sign Out",
 
         // Topbar
@@ -25,8 +24,6 @@ const I18N = {
         role_admin: "Admin",
         role_staff: "Sales Staff",
         lang_switch: "ಕನ್ನಡ",
-        sync_connected: "Google Sheets Ready",
-        sync_offline: "Local DB Active",
 
         // Dashboard
         dash_title: "Inventory Dashboard",
@@ -125,8 +122,14 @@ const I18N = {
         btn_view_invoice: "View Invoice",
         btn_return_sale: "Return Sale",
 
-        // Stock Management
-        stock_title: "Stock Management & Audit Movements",
+        // Stock Alerts
+        stock_title: "Stock Alert",
+        stock_alert_subtitle: "Products at or below their minimum stock level.",
+        stock_alert_table_title: "Stock Alert",
+        stock_alert_product: "Product Name",
+        stock_alert_minimum: "Minimum Stock Quantity",
+        stock_alert_current: "Current Stock Quantity",
+        stock_alert_empty: "No products are at or below their minimum stock level.",
         btn_adjust_stock: "Quick Stock Adjustment",
         col_mov_date: "Date & Time",
         col_mov_prod: "Product",
@@ -150,21 +153,22 @@ const I18N = {
 
         // Suppliers & Customers
         sup_title: "Supplier Management",
-        cust_title: "Customer Ledger",
         btn_add_supplier: "+ Add Supplier",
-        btn_add_customer: "+ Add Customer",
 
         // Reports
         rep_title: "Reports & Financial Analytics",
         rep_sales: "Sales Report",
         rep_stock: "Stock Valuation",
         rep_pl: "Profit & Loss Estimate",
+        rep_monthly_subtitle: "Monthly revenue by completed sales",
+        rep_year: "Year",
+        rep_yearly_sales: "Yearly Sales",
+        rep_yearly_subtitle: "Annual revenue by completed sales",
+        rep_no_sales_data: "No sales data is available yet. Completed sales from Google Sheets will appear here.",
+        rep_sheets_not_configured: "Google Sheets is not connected, so live sales data cannot be loaded.",
+        rep_sheets_unavailable: "Sales data could not be loaded from Google Sheets. Check the Apps Script connection and try again.",
         btn_export_csv: "Export CSV",
 
-        // Google Sheets
-        sheets_title: "Google Sheets Data Access Layer",
-        btn_sync_now: "Sync with Google Sheets Now",
-        sheets_desc: "Direct two-way synchronization between your local system and Google Sheets for remote viewing and live cloud backup."
     },
 
     kn: {
@@ -173,14 +177,13 @@ const I18N = {
         app_tagline: "ಎಲೆಕ್ಟ್ರಿಕಲ್ ಮತ್ತು ಎಲೆಕ್ಟ್ರಾನಿಕ್ಸ್ ದಾಸ್ತಾನು ವ್ಯವಸ್ಥೆ",
         nav_dashboard: "ಅಡ್ಮಿನ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
         nav_products: "ಉತ್ಪನ್ನಗಳ ನಿರ್ವಹಣೆ",
-        nav_stock: "ದಾಸ್ತಾನು ನಿರ್ವಹಣೆ",
+        nav_stock: "ಸ್ಟಾಕ್ ಎಚ್ಚರಿಕೆ",
         nav_purchases: "ಖರೀದಿ / ಪರ್ಚೇಸ್",
         nav_sales: "ಮಾರಾಟ ಮತ್ತು ಬಿಲ್ಲಿಂಗ್",
         nav_suppliers: "ಸರಬರಾಜುದಾರರು (ಸಪ್ಲೈಯರ್ಸ್)",
-        nav_customers: "ಗ್ರಾಹಕರು",
         nav_prices: "ಬೆಲೆ ನಿರ್ವಹಣೆ",
         nav_reports: "ವರದಿಗಳು ಮತ್ತು ವಿಶ್ಲೇಷಣೆ",
-        nav_settings: "ಸೆಟ್ಟಿಂಗ್ಸ್ ಮತ್ತು ಶೀಟ್ಸ್ ಸಿಂಕ್",
+        nav_settings: "ಸೆಟ್ಟಿಂಗ್ಸ್",
         nav_logout: "ನಿರ್ಗಮಿಸಿ (ಲಾಗ್‌ಔಟ್)",
 
         // Topbar
@@ -188,8 +191,6 @@ const I18N = {
         role_admin: "ಅಡ್ಮಿನ್ / ಮಾಲೀಕರು",
         role_staff: "ಮಾರಾಟ ಸಿಬ್ಬಂದಿ",
         lang_switch: "English",
-        sync_connected: "ಗೂಗಲ್ ಶೀಟ್ಸ್ ಸಿದ್ಧವಾಗಿದೆ",
-        sync_offline: "ಸ್ಥಳೀಯ ಸಂಗ್ರಹಣೆ ಸಕ್ರಿಯ",
 
         // Dashboard
         dash_title: "ದಾಸ್ತಾನು ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
@@ -288,8 +289,14 @@ const I18N = {
         btn_view_invoice: "ಬಿಲ್ ವೀಕ್ಷಿಸಿ",
         btn_return_sale: "ಮಾರಾಟ ಹಿಂತಿರುಗಿಸುವಿಕೆ",
 
-        // Stock Management
-        stock_title: "ದಾಸ್ತಾನು ನಿರ್ವಹಣೆ ಮತ್ತು ಆಡಿಟ್ ಇತಿಹಾಸ",
+        // Stock Alerts
+        stock_title: "ಸ್ಟಾಕ್ ಎಚ್ಚರಿಕೆ",
+        stock_alert_subtitle: "ಕನಿಷ್ಠ ಸ್ಟಾಕ್ ಮಟ್ಟದಲ್ಲಿ ಅಥವಾ ಅದಕ್ಕಿಂತ ಕಡಿಮೆ ಇರುವ ಉತ್ಪನ್ನಗಳು.",
+        stock_alert_table_title: "ಸ್ಟಾಕ್ ಎಚ್ಚರಿಕೆ",
+        stock_alert_product: "ಉತ್ಪನ್ನದ ಹೆಸರು",
+        stock_alert_minimum: "ಕನಿಷ್ಠ ಸ್ಟಾಕ್ ಪ್ರಮಾಣ",
+        stock_alert_current: "ಪ್ರಸ್ತುತ ಸ್ಟಾಕ್ ಪ್ರಮಾಣ",
+        stock_alert_empty: "ಕನಿಷ್ಠ ಮಟ್ಟದಲ್ಲಿ ಅಥವಾ ಅದಕ್ಕಿಂತ ಕಡಿಮೆ ಸ್ಟಾಕ್ ಇರುವ ಉತ್ಪನ್ನಗಳಿಲ್ಲ.",
         btn_adjust_stock: "ತ್ವರಿತ ದಾಸ್ತಾನು ಹೊಂದಾಣಿಕೆ",
         col_mov_date: "ದಿನಾಂಕ ಮತ್ತು ಸಮಯ",
         col_mov_prod: "ಉತ್ಪನ್ನ",
@@ -313,21 +320,22 @@ const I18N = {
 
         // Suppliers & Customers
         sup_title: "ಸರಬರಾಜುದಾರರ ಪಟ್ಟಿ",
-        cust_title: "ಗ್ರಾಹಕರ ಲೆಕ್ಕಪತ್ರ (ಲೆಡ್ಜರ್)",
         btn_add_supplier: "+ ಸಪ್ಲೈಯರ್ ಸೇರಿಸಿ",
-        btn_add_customer: "+ ಗ್ರಾಹಕರನ್ನು ಸೇರಿಸಿ",
 
         // Reports
         rep_title: "ಹಣಕಾಸು ವರದಿಗಳು ಮತ್ತು ವಿಶ್ಲೇಷಣೆ",
         rep_sales: "ಮಾರಾಟ ವರದಿ",
         rep_stock: "ದಾಸ್ತಾನು ಮೌಲ್ಯಮಾಪನ ವರದಿ",
         rep_pl: "ಲಾಭ ಮತ್ತು ನಷ್ಟದ ಅಂದಾಜು",
+        rep_monthly_subtitle: "ಪೂರ್ಣಗೊಂಡ ಮಾರಾಟಗಳ ಮಾಸಿಕ ಆದಾಯ",
+        rep_year: "ವರ್ಷ",
+        rep_yearly_sales: "ವಾರ್ಷಿಕ ಮಾರಾಟ",
+        rep_yearly_subtitle: "ಪೂರ್ಣಗೊಂಡ ಮಾರಾಟಗಳ ವಾರ್ಷಿಕ ಆದಾಯ",
+        rep_no_sales_data: "ಇನ್ನೂ ಮಾರಾಟದ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ. Google Sheets‌ನ ಪೂರ್ಣಗೊಂಡ ಮಾರಾಟಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.",
+        rep_sheets_not_configured: "Google Sheets ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ; ಆದ್ದರಿಂದ ನೇರ ಮಾರಾಟದ ಮಾಹಿತಿಯನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.",
+        rep_sheets_unavailable: "Google Sheets‌ನಿಂದ ಮಾರಾಟದ ಮಾಹಿತಿ ಲೋಡ್ ಆಗಲಿಲ್ಲ. Apps Script ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
         btn_export_csv: "CSV ರಫ್ತು ಮಾಡಿ",
 
-        // Google Sheets
-        sheets_title: "ಗೂಗಲ್ ಶೀಟ್ಸ್ ಸಂಪರ್ಕ ಮತ್ತು ಡೇಟಾ ಸಿಂಕ್",
-        btn_sync_now: "ಈಗಲೇ ಗೂಗಲ್ ಶೀಟ್ಸ್‌ನೊಂದಿಗೆ ಸಿಂಕ್ ಮಾಡಿ",
-        sheets_desc: "ನಿಮ್ಮ ಸ್ಥಳೀಯ ದಾಸ್ತಾನು ಡೇಟಾವನ್ನು ಗೂಗಲ್ ಸ್ಪ್ರೆಡ್‌ಶೀಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ ನೇರ ಕ್ಲೌಡ್ ಬ್ಯಾಕಪ್ ಪಡೆಯಿರಿ."
     }
 };
 

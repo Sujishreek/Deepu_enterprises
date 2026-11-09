@@ -47,10 +47,10 @@
                     <span class="nav-text" data-i18n="nav_products">Products Management</span>
                 </button>
 
-                <!-- 3. Stock Management -->
+                <!-- 3. Stock Alerts -->
                 <button class="nav-item" data-view="stock" onclick="navigateTo('stock')">
-                    <span class="nav-icon">📑</span>
-                    <span class="nav-text" data-i18n="nav_stock">Stock Management</span>
+                    <span class="nav-icon">🔔</span>
+                    <span class="nav-text" data-i18n="nav_stock">Stock Alert</span>
                 </button>
 
                 <!-- 4. Purchases -->
@@ -71,25 +71,19 @@
                     <span class="nav-text" data-i18n="nav_suppliers">Suppliers</span>
                 </button>
 
-                <!-- 7. Customers -->
-                <button class="nav-item" data-view="customers" onclick="navigateTo('customers')">
-                    <span class="nav-icon">👥</span>
-                    <span class="nav-text" data-i18n="nav_customers">Customers</span>
-                </button>
-
-                <!-- 8. Price Management -->
+                <!-- 7. Price Management -->
                 <button class="nav-item" data-view="prices" onclick="navigateTo('prices')">
                     <span class="nav-icon">🏷️</span>
                     <span class="nav-text" data-i18n="nav_prices">Price Management</span>
                 </button>
 
-                <!-- 9. Reports -->
+                <!-- 8. Reports -->
                 <button class="nav-item" data-view="reports" onclick="navigateTo('reports')">
                     <span class="nav-icon">📈</span>
                     <span class="nav-text" data-i18n="nav_reports">Reports & Analytics</span>
                 </button>
 
-                <!-- 10. Settings & Google Sheets Sync -->
+                <!-- 9. Settings & Google Sheets Sync -->
                 <button class="nav-item" data-view="settings" onclick="navigateTo('settings')">
                     <span class="nav-icon">⚙️</span>
                     <span class="nav-text" data-i18n="nav_settings">Settings & Sheets Sync</span>
@@ -102,12 +96,9 @@
                     <div class="user-avatar-circle">D</div>
                     <div class="sidebar-footer-info">
                         <span class="user-name">Deepu R.</span>
-                        <span class="user-role-chip" id="userRoleChip" title="Click to toggle role">Admin (Click to toggle)</span>
+                        <span class="user-role-chip">Administrator</span>
                     </div>
                 </div>
-                <button style="background: transparent; border: none; color: #94A3B8; cursor: pointer;" title="Sign out" onclick="alert('Session active in demo mode.')">
-                    🚪
-                </button>
             </div>
         </aside>
 
@@ -147,9 +138,19 @@
                     </button>
 
                     <!-- User Pill -->
-                    <div class="user-dropdown-btn">
-                        <div class="user-avatar-circle" style="width: 28px; height: 28px; font-size: 0.75rem;">DR</div>
-                        <span style="font-size: 0.88rem; font-weight: 600;">Deepu R.</span>
+                    <div class="user-profile-menu" id="userProfileMenu">
+                        <button class="user-dropdown-btn" id="userProfileButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="userProfileDropdown">
+                            <span class="user-avatar-circle topbar-user-avatar">DR</span>
+                            <span class="user-profile-name">Deepu R.</span>
+                            <span class="user-profile-chevron" aria-hidden="true">⌄</span>
+                        </button>
+                        <div class="user-profile-dropdown" id="userProfileDropdown" role="menu" hidden>
+                            <div class="user-profile-details">
+                                <strong>Deepu R.</strong>
+                                <span>Administrator</span>
+                            </div>
+                            <button class="user-profile-signout" type="button" role="menuitem" onclick="handleDemoSignOut()">↪ <span>Sign out</span></button>
+                        </div>
                     </div>
                 </div>
             </header>

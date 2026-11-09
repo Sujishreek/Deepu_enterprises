@@ -10,11 +10,10 @@ const I18N = {
         app_tagline: "Electrical & Electronics Inventory System",
         nav_dashboard: "Admin Dashboard",
         nav_products: "Products Management",
-        nav_stock: "Stock Management",
+        nav_stock: "Stock Alert",
         nav_purchases: "Purchase",
         nav_sales: "Sales & POS",
         nav_suppliers: "Suppliers",
-        nav_customers: "Customers",
         nav_prices: "Price Management",
         nav_reports: "Reports & Analytics",
         nav_settings: "Settings & Sheets Sync",
@@ -125,8 +124,14 @@ const I18N = {
         btn_view_invoice: "View Invoice",
         btn_return_sale: "Return Sale",
 
-        // Stock Management
-        stock_title: "Stock Management & Audit Movements",
+        // Stock Alerts
+        stock_title: "Stock Alert",
+        stock_alert_subtitle: "Products at or below their minimum stock level.",
+        stock_alert_table_title: "Stock Alert",
+        stock_alert_product: "Product Name",
+        stock_alert_minimum: "Minimum Stock Quantity",
+        stock_alert_current: "Current Stock Quantity",
+        stock_alert_empty: "No products are at or below their minimum stock level.",
         btn_adjust_stock: "Quick Stock Adjustment",
         col_mov_date: "Date & Time",
         col_mov_prod: "Product",
@@ -150,9 +155,7 @@ const I18N = {
 
         // Suppliers & Customers
         sup_title: "Supplier Management",
-        cust_title: "Customer Ledger",
         btn_add_supplier: "+ Add Supplier",
-        btn_add_customer: "+ Add Customer",
 
         // Reports
         rep_title: "Reports & Financial Analytics",
@@ -173,11 +176,10 @@ const I18N = {
         app_tagline: "எலக்ட்ரிக்கல் & எலக்ட்ரானிக்ஸ் சரக்கு மேலாண்மை அமைப்பு",
         nav_dashboard: "நிர்வாக முகப்பு",
         nav_products: "பொருட்கள் மேலாண்மை",
-        nav_stock: "கையிருப்பு மேலாண்மை",
+        nav_stock: "இருப்பு எச்சரிக்கை",
         nav_purchases: "கொள்முதல்",
         nav_sales: "விற்பனை & பில்லிங்",
         nav_suppliers: "சப்ளையர்கள்",
-        nav_customers: "வாடிக்கையாளர்கள்",
         nav_prices: "விலை மேலாண்மை",
         nav_reports: "அறிக்கைகள் & பகுப்பாய்வு",
         nav_settings: "அமைப்புகள் & கூகிள் ஷீட்ஸ்",
@@ -288,8 +290,14 @@ const I18N = {
         btn_view_invoice: "ரசீது பார்",
         btn_return_sale: "பில் திரும்புதல்",
 
-        // Stock Management
-        stock_title: "கையிருப்பு மேலாண்மை & தணிக்கை வரலாறு",
+        // Stock Alerts
+        stock_title: "இருப்பு எச்சரிக்கை",
+        stock_alert_subtitle: "குறைந்தபட்ச இருப்பு அளவில் அல்லது அதற்குக் கீழே உள்ள பொருட்கள்.",
+        stock_alert_table_title: "இருப்பு எச்சரிக்கை",
+        stock_alert_product: "பொருள் பெயர்",
+        stock_alert_minimum: "குறைந்தபட்ச இருப்பு அளவு",
+        stock_alert_current: "தற்போதைய இருப்பு அளவு",
+        stock_alert_empty: "குறைந்தபட்ச அளவில் அல்லது அதற்குக் கீழே பொருட்கள் இல்லை.",
         btn_adjust_stock: "விரைவு இருப்பு சரிசெய்தல்",
         col_mov_date: "தேதி & நேரம்",
         col_mov_prod: "பொருள்",
@@ -313,9 +321,7 @@ const I18N = {
 
         // Suppliers & Customers
         sup_title: "சப்ளையர்கள் பட்டியல்",
-        cust_title: "வாடிக்கையாளர் கணக்கு ஏடு",
         btn_add_supplier: "+ சப்ளையர் சேர்க்க",
-        btn_add_customer: "+ வாடிக்கையாளர் சேர்க்க",
 
         // Reports
         rep_title: "நிதி அறிக்கைகள் & பகுப்பாய்வு",
