@@ -236,12 +236,12 @@ async function renderDashboardView() {
             <td>${sale.items_count || 1} (${sale.total_quantity || 1} pcs)</td>
             <td><b>₹ ${Number(sale.grand_total).toLocaleString('en-IN')}</b></td>
             <td><span class="chip-payment ${(sale.payment_mode || 'cash').toLowerCase()}">${sale.payment_mode}</span></td>
-            <td><span class="badge-stock in">${isKn ? "முடிந்தது" : "Completed"}</span></td>
+            <td><span class="badge-stock in">${isKn ? "ಪೂರ್ಣಗೊಂಡಿದೆ" : "Completed"}</span></td>
             <td>
                 <button class="btn btn-outline btn-sm" onclick="openInvoiceModal('${sale.sale_id}')">👁 ${t('btn_view_invoice')}</button>
             </td>
         </tr>
-    `).join("") || `<tr><td colspan="8">${isKn ? "விற்பனை பதிவுகள் இல்லை" : "No recent sales."}</td></tr>`;
+    `).join("") || `<tr><td colspan="8">${isKn ? "ಇತ್ತೀಚಿನ ಮಾರಾಟ ದಾಖಲೆಗಳಿಲ್ಲ" : "No recent sales."}</td></tr>`;
 
     let topProductsRows = (s.top_products || []).map((tp, idx) => `
         <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-light);">
@@ -264,7 +264,7 @@ async function renderDashboardView() {
         <div class="page-header">
             <div class="page-title-group">
                 <h1>⚡ ${t('dash_title')}</h1>
-                <p>${isKn ? "மின் மற்றும் மின்னணு கடை சரக்கு மற்றும் விற்பனை கண்காணிப்பு" : "Electrical & electronics inventory, sales tracking and warehouse racks."}</p>
+                <p>${isKn ? "ಎಲೆಕ್ಟ್ರಿಕಲ್ ಮತ್ತು ಎಲೆಕ್ಟ್ರಾನಿಕ್ಸ್ ಅಂಗಡಿಯ ಸರಕು ಹಾಗೂ ಮಾರಾಟ ನಿರ್ವಹಣೆ" : "Electrical & electronics inventory, sales tracking and warehouse racks."}</p>
             </div>
             <div class="page-header-actions">
                 <button class="btn btn-primary" onclick="openAddProductModal()">+ ${t('btn_add_product')}</button>
@@ -308,7 +308,7 @@ async function renderDashboardView() {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <div>
                         <h3 style="font-size: 1.15rem; font-weight: 700;">📈 ${t('sec_stock_trend')}</h3>
-                        <small style="color: var(--text-secondary);">${isKn ? "கடந்த 7 நாட்களின் விற்பனை வருவாய்" : "Last 7 days daily sales revenue in INR"}</small>
+                        <small style="color: var(--text-secondary);">${isKn ? "ಕಳೆದ 7 ದಿನಗಳ ಮಾರಾಟ ಆದಾಯ" : "Last 7 days daily sales revenue in INR"}</small>
                     </div>
                     <span class="stat-badge-trend">+12.6% Growth</span>
                 </div>
@@ -329,7 +329,7 @@ async function renderDashboardView() {
         <div class="racks-section-header">
             <div>
                 <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">🗄️ ${t('sec_racks')}</h2>
-                <small style="color: var(--text-secondary);">${isKn ? "ரேக் மீது கிளிக் செய்து அந்த ரேக்கின் பொருட்களைப் பார்க்கவும்" : "Click any rack to filter and manage its electrical stock"}</small>
+                <small style="color: var(--text-secondary);">${isKn ? "ರ್ಯಾಕ್ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡಿ ಅದರಲ್ಲಿರುವ ಉತ್ಪನ್ನಗಳನ್ನು ವೀಕ್ಷಿಸಿ" : "Click any rack to filter and manage its electrical stock"}</small>
             </div>
             <button class="btn btn-outline btn-sm" onclick="navigateTo('products')">${t('view_all')} Products</button>
         </div>
@@ -369,7 +369,7 @@ function renderRackCards(isKn) {
     return (STATE.racks || []).map(r => {
         const nameDisplay = isKn ? (r.name_kn || r.name) : r.name;
         const statusClass = r.capacity_pct > 80 ? "active" : (r.capacity_pct < 30 ? "warning" : "capacity");
-        const statusText = r.capacity_pct > 80 ? (isKn ? "செயலில்" : "Active") : `${r.capacity_pct}% ${isKn ? "இருப்பு" : "Capacity"}`;
+        const statusText = r.capacity_pct > 80 ? (isKn ? "ಸಕ್ರಿಯ" : "Active") : `${r.capacity_pct}% ${isKn ? "ಸ್ಟಾಕ್" : "Capacity"}`;
 
         return `
             <button type="button" class="rack-card" aria-label="Open ${r.rack_id} - ${nameDisplay} rack cells" onclick="navigateTo('products', { rackId: '${r.rack_id}' })">
@@ -381,7 +381,7 @@ function renderRackCards(isKn) {
                     <span class="rack-icon">${r.icon || '⚡'}</span>
                 </span>
                 <span class="rack-card-bottom">
-                    <span class="rack-items-count">${STATE.products.filter(p => p.rack_id === r.rack_id).length} ${isKn ? "பொருட்கள்" : "Items"}</span>
+                    <span class="rack-items-count">${STATE.products.filter(p => p.rack_id === r.rack_id).length} ${isKn ? "ಉತ್ಪನ್ನಗಳು" : "Items"}</span>
                     <span class="rack-status-pill ${statusClass}">${statusText}</span>
                 </span>
             </button>
@@ -538,17 +538,17 @@ async function renderProductsView() {
                         <section class="rack-cell-card">
                             <div class="rack-cell-header">
                                 <div>
-                                    <strong>${isKn ? "செல்" : "Cell"} ${cell}</strong>
-                                    <small style="display: block; color: var(--text-muted);">${cellProducts.length} ${isKn ? "பொருட்கள்" : "products"}</small>
+                                    <strong>${isKn ? "ಸೆಲ್" : "Cell"} ${cell}</strong>
+                                    <small style="display: block; color: var(--text-muted);">${cellProducts.length} ${isKn ? "ಉತ್ಪನ್ನಗಳು" : "products"}</small>
                                 </div>
-                                <button class="btn btn-primary btn-sm" onclick="openAddProductModal('${STATE.selectedRack}', '${cell}')">+ ${isKn ? "சேர்" : "Add"}</button>
+                                <button class="btn btn-primary btn-sm" onclick="openAddProductModal('${STATE.selectedRack}', '${cell}')">+ ${isKn ? "ಸೇರಿಸಿ" : "Add"}</button>
                             </div>
                             ${cellProducts.map(product => `
                                 <div class="rack-cell-product">
                                     <div style="font-weight: 700;">${isKn ? (product.name_kn || product.name) : product.name}</div>
                                     <small style="color: var(--text-muted);">${product.sku} · ${product.brand_name || "Generic"}</small>
                                     <div style="display: flex; justify-content: space-between; margin: 0.4rem 0;">
-                                        <span>${isKn ? "இருப்பு" : "Stock"}: <b>${product.stock_quantity} ${product.unit || "Piece"}</b></span>
+                                        <span>${isKn ? "ಸ್ಟಾಕ್" : "Stock"}: <b>${product.stock_quantity} ${product.unit || "Piece"}</b></span>
                                         <b style="color: var(--primary-indigo);">₹ ${product.selling_price}</b>
                                     </div>
                                     <div class="rack-cell-actions">
@@ -557,7 +557,7 @@ async function renderProductsView() {
                                         <button class="btn btn-outline-red btn-sm" onclick="confirmDeleteProduct('${product.product_id}')">🗑️</button>
                                     </div>
                                 </div>
-                            `).join("") || `<div style="padding: 1.25rem 0.5rem; color: var(--text-muted); text-align: center;">${isKn ? "காலி செல்" : "Empty cell"}</div>`}
+                            `).join("") || `<div style="padding: 1.25rem 0.5rem; color: var(--text-muted); text-align: center;">${isKn ? "ಖಾಲಿ ಸೆಲ್" : "Empty cell"}</div>`}
                         </section>
                     `;
                 }).join("")}
@@ -587,11 +587,11 @@ async function renderProductsView() {
                             <div>
                                 <div class="product-card-metrics">
                                     <div>
-                                        <small style="color: var(--text-muted); display: block;">${isKn ? "இருப்பு" : "Current Stock"}</small>
+                                        <small style="color: var(--text-muted); display: block;">${isKn ? "ಸ್ಟಾಕ್" : "Current Stock"}</small>
                                         <span class="stock-value-large">${p.stock_quantity} <small style="font-size: 0.75rem;">${p.unit || 'Piece'}</small></span>
                                     </div>
                                     <div style="text-align: right;">
-                                        <small style="color: var(--text-muted); display: block;">${isKn ? "விலை" : "Price"}</small>
+                                        <small style="color: var(--text-muted); display: block;">${isKn ? "ಬೆಲೆ" : "Price"}</small>
                                         <span class="price-value-large">₹ ${p.selling_price}</span>
                                     </div>
                                 </div>
@@ -606,7 +606,7 @@ async function renderProductsView() {
                             </div>
                         </div>
                     `;
-                }).join("") || `<div style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: var(--text-muted);">${isKn ? "பொருட்கள் எதுவும் கிடைக்கவில்லை" : "No products found matching filters."}</div>`}
+                }).join("") || `<div style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: var(--text-muted);">${isKn ? "ಯಾವುದೇ ಉತ್ಪನ್ನಗಳು ಕಂಡುಬಂದಿಲ್ಲ" : "No products found matching filters."}</div>`}
             </div>
         `;
     } else {
@@ -650,7 +650,7 @@ async function renderProductsView() {
                                         </td>
                                     </tr>
                                 `;
-                            }).join("") || `<tr><td colspan="8" style="text-align: center; padding: 2rem;">${isKn ? "பொருட்கள் எதுவும் கிடைக்கவில்லை" : "No products found."}</td></tr>`}
+                            }).join("") || `<tr><td colspan="8" style="text-align: center; padding: 2rem;">${isKn ? "ಯಾವುದೇ ಉತ್ಪನ್ನಗಳು ಕಂಡುಬಂದಿಲ್ಲ" : "No products found."}</td></tr>`}
                         </tbody>
                     </table>
                 </div>
@@ -672,7 +672,7 @@ async function renderProductsView() {
             </div>
         </div>
 
-        ${STATE.selectedRack ? `<div class="brand-pills-row">${brandsHtml}</div>` : `<p class="rack-picker-hint">${isKn ? "ரேக்கைத் தேர்ந்தெடுத்து அதன் 5 செல்களை நிர்வகிக்கவும்." : "Select a rack to open and manage its five storage cells."}</p>`}
+        ${STATE.selectedRack ? `<div class="brand-pills-row">${brandsHtml}</div>` : `<p class="rack-picker-hint">${isKn ? "ರ್ಯಾಕ್ ಆಯ್ಕೆ ಮಾಡಿ ಅದರ ಐದು ಸೆಲ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ." : "Select a rack to open and manage its five storage cells."}</p>`}
         ${contentHtml}
     `;
 }
@@ -713,7 +713,7 @@ async function renderSalesView(activeTab = "details") {
                 <td>${sale.total_quantity || 1}</td>
                 <td><b>₹ ${Number(sale.grand_total).toLocaleString('en-IN')}</b></td>
                 <td><span class="chip-payment ${(sale.payment_mode || 'cash').toLowerCase()}">${sale.payment_mode}</span></td>
-                <td><span class="badge-stock ${sale.status === 'Completed' ? 'in' : 'out'}">${sale.status === 'Completed' ? (isKn ? 'முடிந்தது' : 'Completed') : (isKn ? 'திருப்பித்தரப்பட்டது' : 'Returned')}</span></td>
+                <td><span class="badge-stock ${sale.status === 'Completed' ? 'in' : 'out'}">${sale.status === 'Completed' ? (isKn ? 'ಪೂರ್ಣಗೊಂಡಿದೆ' : 'Completed') : (isKn ? 'ಹಿಂತಿರುಗಿಸಲಾಗಿದೆ' : 'Returned')}</span></td>
                 <td>
                     <div style="display: flex; gap: 0.4rem;">
                         <button class="btn btn-outline btn-sm" onclick="openInvoiceModal('${sale.sale_id}')">👁 ${t('btn_view_invoice')}</button>
@@ -779,7 +779,7 @@ async function renderSalesView(activeTab = "details") {
             <div class="stat-card">
                 <div class="stat-icon-badge blue">👥</div>
                 <div class="stat-content">
-                    <span class="stat-label">${isKn ? "விற்ற அளவு" : "Total Quantity Sold"}</span>
+                    <span class="stat-label">${isKn ? "ಮಾರಾಟವಾದ ಒಟ್ಟು ಪ್ರಮಾಣ" : "Total Quantity Sold"}</span>
                     <span class="stat-value">${s.total_units_sold || 0} Units</span>
                 </div>
             </div>
@@ -837,7 +837,7 @@ function renderPOSInterfaceHtml() {
             </div>
 
             <div class="table-card" style="padding: 1.5rem;">
-                <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;">🧾 ${isKn ? "பில்லிங் கவுண்டர்" : "POS Billing Cart"}</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;">🧾 ${isKn ? "ಬಿಲ್ಲಿಂಗ್ ಕೌಂಟರ್" : "POS Billing Cart"}</h3>
                 
                 <div class="form-grid-2">
                     <div class="form-group">
@@ -1151,7 +1151,7 @@ async function renderPurchasesView() {
         <div class="page-header">
             <div class="page-title-group">
                 <h1>🚚 ${t('purchase_title')}</h1>
-                <p>${isKn ? "சப்ளையர் பில்கள் மற்றும் உள்வரும் சரக்கு மேலாண்மை" : "Procure items from suppliers and automatically restock inventory."}</p>
+                <p>${isKn ? "ಪೂರೈಕೆದಾರರ ಬಿಲ್‌ಗಳು ಮತ್ತು ಒಳಬರುವ ಸರಕು ನಿರ್ವಹಣೆ" : "Procure items from suppliers and automatically restock inventory."}</p>
             </div>
             <div class="page-header-actions">
                 <button class="btn btn-primary" onclick="openNewPurchaseModal()">+ ${t('btn_new_purchase')}</button>
@@ -1208,7 +1208,7 @@ async function renderSuppliersView() {
         <div class="page-header">
             <div class="page-title-group">
                 <h1>🏭 ${t('sup_title')}</h1>
-                <p>${isKn ? "மின்சாதன விநியோகஸ்தர்கள் மற்றும் கடன் கணக்கு" : "Authorized electrical distributors, contacts and outstanding payables."}</p>
+                <p>${isKn ? "ಎಲೆಕ್ಟ್ರಿಕಲ್ ವಿತರಕರು ಮತ್ತು ಬಾಕಿ ಪಾವತಿ ಖಾತೆಗಳು" : "Authorized electrical distributors, contacts and outstanding payables."}</p>
             </div>
             <div class="page-header-actions">
                 <button class="btn btn-primary" onclick="openAddSupplierModal()">+ ${t('btn_add_supplier')}</button>
@@ -1336,7 +1336,7 @@ async function renderPricesView() {
         <div class="page-header">
             <div class="page-title-group">
                 <h1>🏷️ ${t('nav_prices')}</h1>
-                <p>${isKn ? "அடக்கம், விற்பனை விலை, மொத்த விலை மற்றும் லாப விகித மேலாண்மை" : "Monitor purchase costs, retail margins, wholesale discounts and profit markup."}</p>
+                <p>${isKn ? "ಖರೀದಿ ವೆಚ್ಚ, ಚಿಲ್ಲರೆ ಬೆಲೆ, ಸಗಟು ಬೆಲೆ ಮತ್ತು ಲಾಭದ ಪ್ರಮಾಣ ನಿರ್ವಹಣೆ" : "Monitor purchase costs, retail margins, wholesale discounts and profit markup."}</p>
             </div>
         </div>
 
@@ -1423,7 +1423,7 @@ async function renderReportsView(salesAlreadyLoaded = false) {
         <div class="page-header">
             <div class="page-title-group">
                 <h1>📈 ${t('rep_title')}</h1>
-                <p>${isKn ? "விற்பனை வருவாய், சரக்கு மதிப்பு மற்றும் லாப நஷ்ட அறிக்கை" : "Comprehensive electrical shop business analytics."}</p>
+                <p>${isKn ? "ಮಾರಾಟ ಆದಾಯ, ಸ್ಟಾಕ್ ಮೌಲ್ಯ ಮತ್ತು ಲಾಭ-ನಷ್ಟ ವರದಿ" : "Comprehensive electrical shop business analytics."}</p>
             </div>
             <div class="page-header-actions">
                 <button class="btn btn-outline" onclick="exportDataAsCSV('sales')">📥 Export Sales CSV</button>
@@ -1709,7 +1709,12 @@ async function renderEnquiriesView() {
     const list = filter === "All" ? all : all.filter(e => e.type === filter);
     const newCount = all.filter(e => e.status === "New").length;
     const typeLabel = { Quote: "🧾 Quote request", Dealer: "🤝 Dealer application", Contact: "✉️ Contact enquiry" };
-    const statusColor = { New: "badge-yellow", "In Progress": "badge-blue", Closed: "badge-green" };
+    const statusLabel = status => ({
+        New: isKn ? "ಹೊಸದು" : "New",
+        "In Progress": isKn ? "ಪ್ರಗತಿಯಲ್ಲಿದೆ" : "In Progress",
+        Closed: isKn ? "ಮುಚ್ಚಲಾಗಿದೆ" : "Closed",
+        Approved: isKn ? "ಅನುಮೋದಿಸಲಾಗಿದೆ" : "Approved"
+    }[status] || escapeEnq(status || "New"));
 
     const tabs = ["All", "Quote", "Dealer", "Contact"].map(f =>
         `<button class="btn ${filter === f ? "btn-primary" : "btn-outline"} btn-sm" onclick="setEnquiryFilter('${f}')">${f === "All" ? (isKn ? "ಎಲ್ಲಾ" : "All") : f} (${f === "All" ? all.length : all.filter(e => e.type === f).length})</button>`
@@ -1719,36 +1724,47 @@ async function renderEnquiriesView() {
         let items = e.items || [];
         if (!items.length && e.items_json) { try { items = JSON.parse(e.items_json); } catch (err) {} }
         const itemsHtml = items.length
-            ? `<ul style="margin:0.35rem 0 0 1rem;font-size:0.85rem;">${items.map(i => `<li>${escapeEnq(i.name)} <b>× ${escapeEnq(i.qty)}</b> <span style="color:var(--text-muted)">${escapeEnq(i.sku || "")}</span></li>`).join("")}</ul>` : "";
+            ? `<ul class="enquiry-items">${items.map(i => `<li>${escapeEnq(i.name)} <b>× ${escapeEnq(i.qty)}</b> <span>${escapeEnq(i.sku || "")}</span></li>`).join("")}</ul>` : "";
         const when = e.created_at ? new Date(e.created_at).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
+        const phoneDigits = String(e.phone || "").replace(/\D/g, "");
+        const waNumber = phoneDigits.length === 10 ? "91" + phoneDigits : phoneDigits;
+        const contactLinks = [
+            e.phone ? `<a href="tel:${escapeEnq(e.phone)}" class="enquiry-contact-link">☎ ${isKn ? "ಕರೆ ಮಾಡಿ" : "Call"}</a>` : "",
+            waNumber ? `<a href="https://wa.me/${escapeEnq(waNumber)}" target="_blank" rel="noopener" class="enquiry-contact-link">WhatsApp</a>` : "",
+            e.email ? `<a href="mailto:${escapeEnq(e.email)}" class="enquiry-contact-link">✉ ${isKn ? "ಇಮೇಲ್" : "Email"}</a>` : ""
+        ].filter(Boolean).join(" ");
+        const isDealer = e.type === "Dealer";
+        const approvalAction = isDealer
+            ? (e.status === "Approved"
+                ? `<span class="enquiry-approved">✓ ${isKn ? "ಅನುಮೋದಿಸಲಾಗಿದೆ" : "Approved"}</span>`
+                : `<button class="btn btn-primary btn-sm" onclick="approveDealer('${escapeEnq(e.enquiry_id)}')">✓ ${isKn ? "ಡೀಲರ್ ಅನುಮೋದಿಸಿ" : "Approve dealer"}</button>`)
+            : "";
         return `<tr>
-            <td><b>${escapeEnq(e.enquiry_id)}</b><br><span style="font-size:0.8rem;color:var(--text-muted)">${when}</span></td>
+            <td><b>${escapeEnq(e.enquiry_id)}</b><br><span class="enquiry-meta">${when}</span></td>
             <td>${typeLabel[e.type] || escapeEnq(e.type)}</td>
-            <td><b>${escapeEnq(e.name)}</b>${e.business_name ? `<br><span style="font-size:0.85rem">${escapeEnq(e.business_name)}</span>` : ""}<br><a href="tel:${escapeEnq(e.phone)}">${escapeEnq(e.phone)}</a>${e.email ? `<br><span style="font-size:0.85rem">${escapeEnq(e.email)}</span>` : ""}${e.city ? `<br><span style="font-size:0.85rem;color:var(--text-muted)">📍 ${escapeEnq(e.city)}</span>` : ""}</td>
-            <td style="max-width:340px;">${e.subject ? `<b>${escapeEnq(e.subject)}</b><br>` : ""}${escapeEnq(e.message)}${e.gstin ? `<br><span style="font-size:0.85rem">GSTIN: ${escapeEnq(e.gstin)}</span>` : ""}${e.address ? `<br><span style="font-size:0.85rem">${escapeEnq(e.address)}</span>` : ""}${itemsHtml}</td>
-            <td>
-                <select class="form-control" style="min-width:120px;" onchange="changeEnquiryStatus('${escapeEnq(e.enquiry_id)}', this.value)">
-                    ${["New", "In Progress", "Closed"].map(st => `<option ${e.status === st ? "selected" : ""}>${st}</option>`).join("")}
-                </select>
-            </td>
-            <td><button class="btn btn-outline-red btn-sm" onclick="removeEnquiry('${escapeEnq(e.enquiry_id)}')">🗑️</button></td>
+            <td><b>${escapeEnq(e.name)}</b>${e.business_name ? `<br><span>${escapeEnq(e.business_name)}</span>` : ""}${e.city ? `<br><span class="enquiry-meta">📍 ${escapeEnq(e.city)}</span>` : ""}<div class="enquiry-contact-actions">${contactLinks}</div></td>
+            <td class="enquiry-details">${e.subject ? `<b>${escapeEnq(e.subject)}</b><br>` : ""}${escapeEnq(e.message)}${e.gstin ? `<br><span>GSTIN: ${escapeEnq(e.gstin)}</span>` : ""}${e.address ? `<br><span>${escapeEnq(e.address)}</span>` : ""}${itemsHtml}</td>
+            <td><div class="enquiry-status-actions"><select class="form-control" onchange="changeEnquiryStatus('${escapeEnq(e.enquiry_id)}', this.value)">
+                ${["New", "In Progress", "Closed", ...(isDealer ? ["Approved"] : [])].map(st => `<option value="${st}" ${e.status === st ? "selected" : ""}>${statusLabel(st)}</option>`).join("")}
+            </select>${approvalAction}</div></td>
+            <td><button class="btn btn-outline-red btn-sm" onclick="removeEnquiry('${escapeEnq(e.enquiry_id)}')" aria-label="${isKn ? "ಅಳಿಸಿ" : "Delete enquiry"}">🗑️</button></td>
         </tr>`;
-    }).join("") || `<tr><td colspan="6" style="text-align:center;padding:2rem;">${isKn ? "ಇನ್ನೂ ಯಾವುದೇ ವಿಚಾರಣೆಗಳಿಲ್ಲ." : "No enquiries yet. Requests sent from the user website will appear here."}</td></tr>`;
+    }).join("") || `<tr><td colspan="6" class="enquiry-empty">${isKn ? "ಇನ್ನೂ ಯಾವುದೇ ವಿಚಾರಣೆಗಳಿಲ್ಲ." : "No enquiries yet. Requests sent from the user website will appear here."}</td></tr>`;
 
     container.innerHTML = `
         <div class="page-header">
             <div class="page-title-group">
                 <h1>📨 ${t('enq_title')}</h1>
-                <p>${isKn ? "ವೆಬ್‌ಸೈಟ್‌ನಿಂದ ಬಂದ ಕೋಟ್ ವಿನಂತಿಗಳು, ಡೀಲರ್ ಅರ್ಜಿಗಳು ಮತ್ತು ಸಂದೇಶಗಳು." : "Quote requests, dealer applications and messages sent from the customer website."} <b>${newCount}</b> ${isKn ? "ಹೊಸ" : "new"}.</p>
+                <p>${isKn ? "ವೆಬ್‌ಸೈಟ್‌ನಿಂದ ಬಂದ ಬೆಲೆ ವಿಚಾರಣೆಗಳು, ಡೀಲರ್ ಅರ್ಜಿಗಳು ಮತ್ತು ಸಂದೇಶಗಳು." : "Quote requests, dealer applications and messages sent from the customer website."} <b>${newCount}</b> ${isKn ? "ಹೊಸ" : "new"}.</p>
             </div>
             <div class="page-header-actions">
                 <a class="btn btn-outline" href="../user/index.html" target="_blank" rel="noopener">🌐 ${isKn ? "ವೆಬ್‌ಸೈಟ್ ವೀಕ್ಷಿಸಿ" : "View website"}</a>
             </div>
         </div>
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;">${tabs}</div>
-        <div class="table-card"><div style="overflow-x:auto;">
-            <table class="data-table"><thead><tr>
-                <th>ID / Date</th><th>Type</th><th>Customer</th><th>Details</th><th>Status</th><th></th>
+        <div class="enquiry-tabs">${tabs}</div>
+        <div class="table-card"><div class="table-responsive">
+            <table class="data-table enquiry-table"><thead><tr>
+                <th>${isKn ? "ಐಡಿ / ದಿನಾಂಕ" : "ID / Date"}</th><th>${isKn ? "ವಿಧ" : "Type"}</th><th>${isKn ? "ಗ್ರಾಹಕ" : "Customer"}</th><th>${isKn ? "ವಿವರಗಳು" : "Details"}</th><th>${isKn ? "ಸ್ಥಿತಿ / ಕ್ರಮ" : "Status / Action"}</th><th></th>
             </tr></thead><tbody>${rows}</tbody></table>
         </div></div>`;
 }
@@ -1759,6 +1775,23 @@ async function changeEnquiryStatus(id, status) {
     await API.updateEnquiry(id, { status });
     API.showToast("Enquiry marked: " + status, "success");
     renderEnquiriesView();
+}
+
+async function approveDealer(id) {
+    const isKn = CURRENT_LANG === "kn";
+    const record = (LocalDB.load().enquiries || []).find(item => item.enquiry_id === id && item.type === "Dealer");
+    if (!record) {
+        API.showToast(isKn ? "ಡೀಲರ್ ಅರ್ಜಿ ಕಂಡುಬಂದಿಲ್ಲ." : "Dealer application was not found.", "error");
+        return;
+    }
+    if (record.status === "Approved") return;
+    const confirmed = confirm(isKn
+        ? `${record.business_name || record.name} ಅವರ ಡೀಲರ್ ಅರ್ಜಿಯನ್ನು ಅನುಮೋದಿಸಬೇಕೇ?`
+        : `Approve the dealer application for ${record.business_name || record.name}?`);
+    if (!confirmed) return;
+    await API.updateEnquiry(id, { status: "Approved" });
+    API.showToast(isKn ? "ಡೀಲರ್ ಅರ್ಜಿ ಅನುಮೋದಿಸಲಾಗಿದೆ." : "Dealer application approved.", "success");
+    await renderEnquiriesView();
 }
 
 async function removeEnquiry(id) {
@@ -1776,8 +1809,8 @@ async function renderSettingsView() {
     container.innerHTML = `
         <div class="page-header">
             <div class="page-title-group">
-                <h1>⚙️ ${isKn ? "அமைப்புகள்" : "Settings"}</h1>
-                <p>${isKn ? "கடை விவரங்கள் மற்றும் விலைப்பட்டியல் அமைப்புகளை நிர்வகிக்கவும்." : "Manage your shop details and invoice profile."}</p>
+                <h1>⚙️ ${isKn ? "ಸೆಟ್ಟಿಂಗ್‌ಗಳು" : "Settings"}</h1>
+                <p>${isKn ? "ಅಂಗಡಿ ವಿವರಗಳು ಮತ್ತು ಇನ್‌ವಾಯ್ಸ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ." : "Manage your shop details and invoice profile."}</p>
             </div>
         </div>
 
@@ -1895,7 +1928,7 @@ function openEditProductModal(productId) {
     document.getElementById("prodModalTitle").textContent = t('modal_edit_title');
     document.getElementById("prodFormId").value = p.product_id;
     document.getElementById("prodFormNameEn").value = p.name || "";
-    document.getElementById("prodFormNameTa").value = p.name_kn || "";
+    document.getElementById("prodFormNameKn").value = p.name_kn || "";
     document.getElementById("prodFormSku").value = p.sku || "";
     document.getElementById("prodFormRack").value = p.rack_id || "";
     document.getElementById("prodFormRackCell").value = p.rack_cell || "";
@@ -1944,7 +1977,7 @@ async function handleProductFormSubmit(e) {
     const payload = {
         product_id: id || undefined,
         name: document.getElementById("prodFormNameEn").value,
-        name_kn: document.getElementById("prodFormNameTa").value,
+        name_kn: document.getElementById("prodFormNameKn").value,
         sku: document.getElementById("prodFormSku").value,
         rack_id: document.getElementById("prodFormRack").value,
         rack_cell: document.getElementById("prodFormRackCell").value,
