@@ -121,7 +121,7 @@ async def api_dashboard_charts(request):
 
     # 2. Category Distribution (Pie / Donut Chart)
     cat_dist = cur.execute("""
-        SELECT c.name as label, c.name_ta as label_ta,
+        SELECT c.name as label, c.name_ta as label_kn,
                COUNT(p.product_id) as product_count,
                COALESCE(SUM(p.stock_quantity), 0) as stock_count,
                COALESCE(SUM(p.stock_quantity * p.selling_price), 0.0) as total_value
@@ -332,7 +332,7 @@ async def api_price_management(request):
         conn = get_connection()
         cur = conn.cursor()
         rows = cur.execute("""
-            SELECT p.product_id, p.name, p.name_ta, p.sku, p.unit, p.stock_quantity,
+            SELECT p.product_id, p.name, p.name_ta as name_kn, p.sku, p.unit, p.stock_quantity,
                    p.purchase_price, p.selling_price, p.wholesale_price,
                    b.name as brand_name, c.name as category_name,
                    ROUND(((p.selling_price - p.purchase_price) / NULLIF(p.purchase_price, 0)) * 100, 1) as profit_margin_pct,
