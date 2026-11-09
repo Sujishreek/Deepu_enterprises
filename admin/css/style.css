@@ -5,10 +5,10 @@
 
 :root {
     /* Primary Colors & Dark Navy Sidebar */
-    --sidebar-bg: #0B132B;
-    --sidebar-hover: #1C2541;
-    --sidebar-active-grad: linear-gradient(135deg, #4361EE, #3A0CA3);
-    --sidebar-active-glow: 0 4px 14px rgba(67, 97, 238, 0.4);
+    --sidebar-bg: #292477;
+    --sidebar-hover: #39348A;
+    --sidebar-active-grad: linear-gradient(135deg, #13A653, #087B3B);
+    --sidebar-active-glow: 0 4px 14px rgba(19, 166, 83, 0.28);
     --sidebar-text: #94A3B8;
     --sidebar-text-hover: #FFFFFF;
     
@@ -25,21 +25,21 @@
     --text-muted: #94A3B8;
     
     /* Theme Accents (Matching Screenshots) */
-    --primary-blue: #2563EB;
-    --primary-indigo: #4F46E5;
-    --accent-purple: #7C3AED;
-    --success-green: #10B981;
+    --primary-blue: #13A653;
+    --primary-indigo: #087B3B;
+    --accent-purple: #292477;
+    --success-green: #13A653;
     --warning-orange: #F59E0B;
     --danger-red: #EF4444;
     --info-cyan: #06B6D4;
     
     /* Soft Badge Colors */
-    --badge-purple-bg: #EEF2FF;
+    --badge-purple-bg: #ECFDF5;
     --badge-purple-text: #4F46E5;
     --badge-green-bg: #ECFDF5;
     --badge-green-text: #059669;
-    --badge-blue-bg: #EFF6FF;
-    --badge-blue-text: #2563EB;
+    --badge-blue-bg: #ECFDF5;
+    --badge-blue-text: #13A653;
     --badge-yellow-bg: #FFFBEB;
     --badge-yellow-text: #D97706;
     --badge-red-bg: #FEF2F2;
@@ -64,7 +64,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Nirmala UI", "Mukta Malar", "Latha", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans Kannada", "Nirmala UI", "Tunga", sans-serif;
 }
 
 body {
@@ -260,7 +260,7 @@ body.modal-open {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    background: linear-gradient(135deg, #3B82F6, #087B3B);
     color: #fff;
     display: flex;
     align-items: center;
@@ -351,7 +351,7 @@ body.modal-open {
 .search-input-wrapper:focus-within {
     border-color: var(--primary-indigo);
     background: #FFFFFF;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
 }
 
 .search-icon {
@@ -428,8 +428,8 @@ body.modal-open {
     width: 32px;
     height: 32px;
     border-radius: var(--radius-sm);
-    object-fit: cover;
-    background: #F1F5F9;
+    object-fit: contain;
+    background: #F8FAFC;
 }
 
 .suggestion-item-name {
@@ -456,14 +456,14 @@ body.modal-open {
     gap: 1rem;
 }
 
-/* Tamil / English Toggle Pill */
+/* Kannada / English language toggle */
 .btn-lang-toggle {
     display: flex;
     align-items: center;
     gap: 0.45rem;
     background: var(--badge-blue-bg);
     color: var(--primary-blue);
-    border: 1px solid rgba(37, 99, 235, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.2);
     padding: 0.45rem 0.9rem;
     border-radius: var(--radius-full);
     font-weight: 600;
@@ -473,7 +473,7 @@ body.modal-open {
 }
 
 .btn-lang-toggle:hover {
-    background: #DBEAFE;
+    background: #D1FAE5;
     transform: translateY(-1px);
 }
 
@@ -937,7 +937,7 @@ body.modal-open {
 }
 
 .rack-card:focus-visible {
-    outline: 3px solid rgba(37, 99, 235, 0.45);
+    outline: 3px solid rgba(16, 185, 129, 0.36);
     outline-offset: 2px;
 }
 
@@ -947,7 +947,7 @@ body.modal-open {
 
 .rack-card.active {
     border-color: var(--primary-indigo);
-    background: #EEF2FF;
+    background: #ECFDF5;
 }
 
 .rack-card-top {
@@ -998,7 +998,7 @@ body.modal-open {
 }
 
 .rack-status-pill.active { background: #ECFDF5; color: #059669; }
-.rack-status-pill.capacity { background: #EFF6FF; color: #2563EB; }
+.rack-status-pill.capacity { background: #ECFDF5; color: #10B981; }
 .rack-status-pill.warning { background: #FFFBEB; color: #D97706; }
 
 /* ==========================================================================
@@ -1032,10 +1032,10 @@ body.modal-open {
 }
 
 .brand-pill.active {
-    background: #EFF6FF;
+    background: #ECFDF5;
     border-color: var(--primary-blue);
     color: var(--primary-blue);
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
 }
 
 .product-grid-4 {
@@ -1131,9 +1131,12 @@ body.modal-open {
 }
 
 .product-card-thumb {
-    max-width: 90%;
-    max-height: 90%;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
+    padding: 0.5rem;
 }
 
 .product-card-title {
@@ -1256,8 +1259,8 @@ body.modal-open {
     width: 44px;
     height: 44px;
     border-radius: var(--radius-sm);
-    object-fit: cover;
-    background: #F1F5F9;
+    object-fit: contain;
+    background: #F8FAFC;
     border: 1px solid #E2E8F0;
 }
 
@@ -1270,8 +1273,8 @@ body.modal-open {
     display: inline-block;
 }
 
-.chip-payment.upi { background: #EEF2FF; color: #4F46E5; }
-.chip-payment.cash { background: #EFF6FF; color: #2563EB; }
+.chip-payment.upi { background: #ECFDF5; color: #4F46E5; }
+.chip-payment.cash { background: #ECFDF5; color: #10B981; }
 .chip-payment.bank { background: #FDF2F8; color: #BE185D; }
 .chip-payment.credit { background: #FFFBEB; color: #B45309; }
 
@@ -1292,15 +1295,15 @@ body.modal-open {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #2563EB, #1D4ED8);
+    background: linear-gradient(135deg, #10B981, #087B3B);
     color: #FFFFFF;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.22);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #1D4ED8, #1E40AF);
+    background: linear-gradient(135deg, #0F9F6E, #066332);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .btn-teal {
@@ -1327,13 +1330,13 @@ body.modal-open {
 
 .btn-outline-blue {
     background: #FFFFFF;
-    border-color: #BFDBFE;
-    color: #2563EB;
+    border-color: #A7F3D0;
+    color: #10B981;
 }
 
 .btn-outline-blue:hover {
-    background: #EFF6FF;
-    border-color: #2563EB;
+    background: #ECFDF5;
+    border-color: #10B981;
 }
 
 .btn-outline-red {
@@ -1478,7 +1481,7 @@ body.modal-open {
 
 .form-control:focus {
     border-color: var(--primary-indigo);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
 }
 
 /* Toast Notifications */
@@ -1614,4 +1617,34 @@ body.modal-open {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+
+/* Shared Deepu image behavior and responsive enquiry workflow. */
+img { max-width: 100%; }
+.brand-logo-img, .product-card-thumb, .table-thumb, .suggestion-thumb, .avatar-img { object-fit: contain; object-position: center; }
+.product-card-thumb-wrap { width: 100%; min-width: 0; aspect-ratio: 16 / 10; height: auto; }
+.product-card-thumb { width: 100%; height: 100%; padding: .45rem; }
+.table-thumb, .suggestion-thumb { background: #F8FAFC; }
+.enquiry-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.enquiry-table { min-width: 980px; }
+.enquiry-meta { color: var(--text-muted); font-size: .78rem; }
+.enquiry-contact-actions { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .5rem; }
+.enquiry-contact-link { display: inline-flex; align-items: center; border-radius: 999px; background: #ECFDF5; color: #087B3B; text-decoration: none; padding: .25rem .55rem; font-size: .72rem; font-weight: 650; }
+.enquiry-details { max-width: 360px; white-space: normal; overflow-wrap: anywhere; line-height: 1.55; }
+.enquiry-items { margin: .35rem 0 0 1rem; padding: 0; font-size: .82rem; }
+.enquiry-items span { color: var(--text-muted); }
+.enquiry-status-actions { display: grid; gap: .5rem; min-width: 145px; }
+.enquiry-status-actions .form-control { min-width: 135px; }
+.enquiry-approved { display: inline-flex; align-items: center; color: #047857; background: #ECFDF5; border-radius: 999px; padding: .4rem .65rem; font-size: .75rem; font-weight: 700; }
+.enquiry-empty { text-align: center; padding: 2rem !important; }
+@media (max-width: 900px) {
+  .product-card-thumb-wrap { aspect-ratio: 16 / 9; }
+}
+@media (max-width: 600px) {
+  .enquiry-tabs .btn { flex: 1 1 auto; }
+  .table-card { min-width: 0; }
+  .product-card-thumb-wrap { aspect-ratio: 4 / 3; }
+  .product-card-thumb { padding: .3rem; }
 }
