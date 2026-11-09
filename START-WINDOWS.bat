@@ -1,11 +1,11 @@
 @echo off
-title Deepu Enterprises - Electrical & Electronics Inventory System
+title Deepu Enterprises - Website + Admin
 echo ====================================================================
-echo   Deepu Enterprises - Inventory Management System
-echo   Stack: HTML, CSS, JavaScript, Google Apps Script & Google Sheets
+echo   Deepu Enterprises
+echo   User website : http://localhost:8000/user/
+echo   Admin panel  : http://localhost:8000/admin/   (login via Admin link in website footer)
+echo   Demo admin login: admin@deepu.local / Demo@12345
 echo ====================================================================
-echo.
-echo Opening Inventory System in your default browser...
-start http://localhost:8000/
+start http://localhost:8000/user/
 python -m http.server 8000
 pause

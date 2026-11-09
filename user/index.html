@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#159b52">
+  <meta name="description" content="Deepu Enterprises – electrical and electronics wholesale & retail supply in Channarayapatna, Hassan district.">
+  <title>Deepu Enterprises | Electrical & Electronics Supply</title>
+  <link rel="icon" href="assets/images/deepu-logo.png">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/user-extra.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="#home"><img src="assets/images/deepu-logo.png" alt="Deepu Enterprises logo"><span>DE<small data-shop="tagline_short">ENTERPRISES & DISTRIBUTORS</small></span></a>
+  <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button>
+  <nav id="mainNav">
+    <a href="#home" data-i18n="nav_home">Home</a><a href="#sections" data-i18n="nav_sections">Shop by Section</a><a href="#catalog" data-i18n="nav_catalog">Catalog</a>
+    <a href="#brands" data-i18n="nav_brands">Brands</a><a href="#about" data-i18n="nav_about">About</a><a href="#logistics" data-i18n="nav_logistics">Logistics</a><a href="#dealer" data-i18n="nav_dealer">Become a Dealer</a><a href="#contact" data-i18n="nav_contact">Contact</a>
+  </nav>
+  <div class="header-actions">
+    <button class="btn btn-lang" id="langToggle" type="button" title="Switch language">🌐 ಕನ್ನಡ</button>
+    <button class="btn btn-primary" data-view="inquiry"><span data-i18n="my_inquiry">My Inquiry</span> <b id="cartCount">0</b></button>
+  </div>
+</header>
+
+<main>
+<section id="home" class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow" data-i18n="hero_eyebrow">YOUR TRUSTED ELECTRICAL & ELECTRONICS PARTNER</span>
+    <h1 data-i18n-html="hero_title">Powering businesses.<br><em>Strengthening</em> relationships.</h1>
+    <p data-i18n="hero_text">Bulbs, wires, switches, MCBs, fans, lighting and more — wholesale and retail supply from one dependable counter.</p>
+    <div class="hero-search">
+      <input id="heroSearch" type="search" autocomplete="off" data-i18n-ph="search_ph" placeholder="Search product, brand or SKU… (e.g. syska, vayar, ಬಲ್ಬ್)">
+      <div class="search-flyout" id="heroSuggest"></div>
+    </div>
+    <div class="hero-actions"><a class="btn btn-primary btn-lg" href="#catalog"><span data-i18n="explore">Explore Catalog</span> <span>→</span></a><a class="btn btn-light btn-lg" href="#dealer" data-i18n="nav_dealer">Become a Dealer</a></div>
+    <div class="hero-note"><span class="status-dot"></span> <span data-i18n="serving">Serving Channarayapatna and surrounding regions</span></div>
+  </div>
+  <div class="hero-art">
+    <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+    <div class="hero-logo"><img src="assets/images/deepu-logo.png" alt="Deepu Enterprises"></div>
+    <div class="floating-card"><strong data-i18n="float_a">One partner.</strong><span data-i18n="float_b">Many supply needs.</span></div>
+  </div>
+</section>
+
+<section class="trust-strip">
+  <div><strong><span id="statProducts">0</span> <small data-i18n="stat_products_u">Products</small></strong><span data-i18n="stat_products">In our live catalog</span></div>
+  <div><strong><span id="statBrands">0</span> <small data-i18n="stat_brands_u">Brands</small></strong><span data-i18n="stat_brands">Partner brands</span></div>
+  <div><strong><span id="statSections">0</span> <small data-i18n="stat_sections_u">Sections</small></strong><span data-i18n="stat_sections">Organised store racks</span></div>
+  <div class="trust-disclaimer" data-i18n="disclaimer">Catalog, stock status and prices update live from the shop's inventory system. Wholesale rates are shared on enquiry.</div>
+</section>
+
+<section id="sections" class="section sections-section">
+  <div class="section-kicker" data-i18n="sec_kicker">SHOP BY SECTION</div>
+  <div class="section-heading"><h2 data-i18n-html="sec_title">Find it on<br><em>the right rack.</em></h2><p data-i18n="sec_text">Our store is organised into racks by product type. Pick a section to see what is available.</p></div>
+  <div class="rack-grid" id="rackGrid"></div>
+</section>
+
+<section id="catalog" class="section catalog-section">
+  <div class="section-kicker" data-i18n="cat_kicker">PRODUCT CATALOG</div>
+  <div class="section-heading"><h2 data-i18n-html="cat_title">Find what your<br><em>business needs.</em></h2><p data-i18n="cat_text">Browse live products with retail prices and availability. Wholesale prices are shared after inquiry or dealer approval.</p></div>
+  <div class="catalog-tools"><input id="productSearch" type="search" data-i18n-ph="search_ph" placeholder="Search products, SKU or brand…"><select id="categoryFilter"></select><select id="brandFilter"></select></div>
+  <div class="category-pills" id="categoryPills"></div>
+  <div class="active-filter" id="activeFilter" hidden></div>
+  <div class="product-grid" id="productGrid"></div>
+  <div class="center"><button class="btn btn-outline" id="showMore"></button></div>
+</section>
+
+<section id="brands" class="section brand-section">
+  <div class="section-kicker" data-i18n="brand_kicker">BRANDS & SUPPLY PARTNERS</div>
+  <div class="section-heading"><h2 data-i18n-html="brand_title">Brands you<br><em>already trust.</em></h2><p data-i18n="brand_text">Tap a brand to see its products in our catalog.</p></div>
+  <div class="brand-grid" id="brandGrid"></div>
+</section>
+
+<section id="about" class="section about-section">
+  <div class="section-kicker" data-i18n="about_kicker">ABOUT DEEPU ENTERPRISES</div>
+  <div class="section-heading"><h2 data-i18n-html="about_title">Built on trust.<br><em>Driven by service.</em></h2><p data-i18n="about_text">Deepu Enterprises is an electrical and electronics wholesale and retail supplier based in Channarayapatna, Karnataka. We connect electricians, contractors, retailers and households with dependable products and responsive local support.</p></div>
+  <div class="about-grid">
+    <div class="about-panel"><div class="panel-mark">D</div><h3 data-i18n="about_panel_h">Dependable supply, closer to your business.</h3><p data-i18n="about_panel_p">Our focus is straightforward: genuine branded products, clear communication and dependable distribution support.</p></div>
+    <div class="value-card"><span>01</span><h3 data-i18n="v1_h">Genuine brands</h3><p data-i18n="v1_p">Leading electrical brands under one roof.</p></div>
+    <div class="value-card"><span>02</span><h3 data-i18n="v2_h">Wholesale & retail</h3><p data-i18n="v2_p">Competitive rates for bulk and counter buyers.</p></div>
+    <div class="value-card"><span>03</span><h3 data-i18n="v3_h">Local distribution</h3><p data-i18n="v3_p">Coverage planning around Hassan district.</p></div>
+  </div>
+</section>
+
+<section id="logistics" class="section logistics-section">
+  <div class="section-kicker" data-i18n="log_kicker">DISTRIBUTION & LOGISTICS</div>
+  <div class="section-heading"><h2 data-i18n-html="log_title">Local knowledge.<br><em>Planned delivery.</em></h2><p data-i18n="log_text">Coverage areas around our Channarayapatna hub. Please confirm delivery days and serviceability with our team.</p></div>
+  <div class="logistics-layout">
+    <div class="route-card"><div class="route-top"><span class="route-icon">⌖</span><div><b data-i18n="primary_hub">Primary hub</b><strong data-i18n="town_chn">Channarayapatna</strong><small data-i18n="dist_hassan">Hassan District, Karnataka</small></div></div><div class="route-line"></div><div class="route-list" id="routeList"></div><p class="small-muted" data-i18n="log_note">Coverage list is not a guarantee of daily service or a physical branch at each location.</p></div>
+    <div class="coverage-card"><div class="map-visual"><div class="map-grid"></div><div class="map-center">DE</div><span class="map-pin pin-a">Hassan</span><span class="map-pin pin-b">Arsikere</span><span class="map-pin pin-c">Belur</span><span class="map-pin pin-d">Alur</span><span class="map-pin pin-e">Sakleshpur</span><span class="map-pin pin-f">Arkalgud</span><span class="map-pin pin-g">Holenarasipura</span></div><div class="map-caption"><b data-i18n="map_cap">Hassan district coverage overview</b><span data-i18n="map_note">Illustrative schematic, not a navigational map.</span></div></div>
+  </div>
+</section>
+
+<section id="dealer" class="section dealer-section">
+  <div class="dealer-banner"><div><div class="section-kicker light" data-i18n="dealer_kicker">GROW WITH DEEPU ENTERPRISES</div><h2 data-i18n-html="dealer_title">Let’s build a stronger<br><em>business relationship.</em></h2><p data-i18n="dealer_text">Apply to become a retail or sub-dealer partner. Our team can review your details and contact you.</p></div><a href="#dealerForm" class="btn btn-light btn-lg" data-i18n="dealer_cta">Apply for dealership →</a></div>
+  <form class="form-card" id="dealerForm"><div><h3 data-i18n="dealer_form_h">Dealer application</h3><p data-i18n="dealer_form_p">Submit your shop and contact information.</p></div><div class="form-grid">
+    <label><span data-i18n="f_contact">Contact person</span><input name="contactName" required maxlength="100"></label><label><span data-i18n="f_business">Shop / business name</span><input name="businessName" required maxlength="140"></label>
+    <label><span data-i18n="f_mobile">Mobile number</span><input name="phone" required pattern="[6-9][0-9]{9}" data-i18n-ph="ph_mobile" placeholder="10-digit mobile"></label><label><span data-i18n="f_email">Email</span><input name="email" type="email"></label>
+    <label><span data-i18n="f_gstin">GSTIN (if registered)</span><input name="gstin" maxlength="15" pattern="[0-9A-Za-z]{15}" data-i18n-ph="ph_gstin" placeholder="15-character GSTIN"></label><label><span data-i18n="f_city">City / town</span><input name="city" required></label>
+    <label class="full"><span data-i18n="f_address">Shop address</span><textarea name="address" rows="3" required></textarea></label><label class="full"><span data-i18n="f_interest">Products of interest</span><input name="interest" data-i18n-ph="ph_interest" placeholder="Bulbs, wires, switches, fans…"></label>
+  </div><label class="consent"><input type="checkbox" required> <span data-i18n="consent_dealer">I agree to be contacted regarding this dealership application.</span></label><button class="btn btn-primary" type="submit" data-i18n="submit_app">Submit application</button><p class="form-message" id="dealerMessage" aria-live="polite"></p></form>
+</section>
+
+<section id="contact" class="section contact-section">
+  <div class="section-kicker" data-i18n="contact_kicker">CONTACT US</div><div class="section-heading"><h2 data-i18n-html="contact_title">Let’s talk<br><em>business.</em></h2><p data-i18n="contact_text">For product availability, bulk requirements and dealership enquiries, contact the team.</p></div>
+  <div class="contact-grid"><div class="contact-info">
+    <div class="contact-item"><span>✆</span><div><small data-i18n="c_phone">PHONE</small><b data-shop="phone">—</b></div></div>
+    <div class="contact-item"><span>✉</span><div><small data-i18n="c_email">OFFICIAL EMAIL</small><a href="mailto:contact@deepuenterprises.com">contact@deepuenterprises.com</a></div></div>
+    <div class="contact-item"><span>⌖</span><div><small data-i18n="c_loc">BUSINESS LOCATION</small><b data-shop="address">—</b></div></div>
+    <div class="contact-item"><span>◎</span><div><small>WHATSAPP</small><b data-i18n="c_wa">Chat with us on WhatsApp</b></div></div>
+  </div>
+  <form class="form-card contact-form" id="contactForm"><h3 data-i18n="contact_form_h">Send an enquiry</h3><label><span data-i18n="f_name">Your name</span><input name="name" required></label><label><span data-i18n="f_phone">Phone number</span><input name="phone" required pattern="[6-9][0-9]{9}" data-i18n-ph="ph_mobile" placeholder="10-digit mobile"></label><label><span data-i18n="f_email">Email</span><input name="email" type="email"></label><label><span data-i18n="f_type">Enquiry type</span><select name="type"><option value="General" data-i18n="t_general">General</option><option value="Product Enquiry" data-i18n="t_product">Product Enquiry</option><option value="Bulk Order" data-i18n="t_bulk">Bulk Order</option><option value="Distribution" data-i18n="t_dist">Distribution</option></select></label><label><span data-i18n="f_message">Message</span><textarea name="message" rows="4" required></textarea></label><button class="btn btn-primary" data-i18n="send_enquiry">Send enquiry</button><p class="form-message" id="contactMessage" aria-live="polite"></p></form></div>
+</section>
+</main>
+
+<footer class="footer"><div class="footer-brand"><img src="assets/images/deepu-logo.png" alt=""><div><b data-shop="name_upper">DEEPU ENTERPRISES</b><small data-shop="tagline_upper">ELECTRICAL & ELECTRONICS</small></div></div><p data-i18n="footer_text">Distribution and supply support for electricians, retailers and businesses.</p><div class="footer-bottom"><span>© <span id="year"></span> Deepu Enterprises. <span data-i18n="rights">All rights reserved.</span></span><span>contact@deepuenterprises.com</span><button class="text-button" data-view="admin-login" data-i18n="admin_link">Admin</button></div></footer>
+<a class="whatsapp-float" id="whatsappLink" href="#" target="_blank" rel="noopener" aria-label="WhatsApp">◔</a>
+
+<div class="modal-backdrop" id="modalBackdrop"><section class="modal" role="dialog" aria-modal="true"><button class="modal-close" id="modalClose" aria-label="Close">×</button><div id="modalContent"></div></section></div>
+<div class="toast" id="toast" role="status"></div>
+<script src="js/search.js"></script>
+<script src="js/db.js"></script>
+<script src="js/user.js"></script>
+</body></html>
