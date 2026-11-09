@@ -253,50 +253,69 @@ def init_db():
     if check == 0:
         seed_all_data(conn)
 
+    # Normalize known legacy Tamil sample labels to Kannada on existing local DBs too.
+    migrate_legacy_sample_translations(conn)
     conn.close()
+
+def migrate_legacy_sample_translations(conn):
+    """Idempotently keep the bundled sample translations in Kannada."""
+    cur = conn.cursor()
+    categories = {
+        "C_CABLES": "ಕೈಗಾರಿಕಾ ಕೇಬಲ್‌ಗಳು",
+        "C_FUSE": "ಫ್ಯೂಸ್‌ಗಳು ಮತ್ತು ಸುರಕ್ಷತೆ",
+    }
+    products = {
+        "P102": "ಫಿಲಿಪ್ಸ್ 9W ಎಲ್ಇಡಿ ಬಲ್ಬ್",
+        "P104": "ಬಜಾಜ್ 9W ಎಲ್ಇಡಿ ಬಲ್ಬ್",
+        "P105": "ಹ್ಯಾವೆಲ್ಸ್ 12W ಎಲ್ಇಡಿ ಬಲ್ಬ್",
+        "P114": "ಹ್ಯಾವೆಲ್ಸ್ 12W ಎಲ್ಇಡಿ ಪ್ಯಾನೆಲ್",
+    }
+    cur.executemany("UPDATE categories SET name_ta = ? WHERE category_id = ?", [(v, k) for k, v in categories.items()])
+    cur.executemany("UPDATE products SET name_ta = ? WHERE product_id = ?", [(v, k) for k, v in products.items()])
+    conn.commit()
 
 def seed_all_data(conn):
     cur = conn.cursor()
 
     # 1. Seed Racks R1-R20 (Matches Screenshot 3)
     racks_data = [
-        ("R1", "Bulbs", "பல்புகள்", "lightbulb", "C_BULBS", 95, "Active", "LED Bulbs, Incandescent, Smart Bulbs"),
-        ("R2", "Wires", "கம்பிகள் / ஒயர்கள்", "cable", "C_WIRES", 89, "Active", "Copper wire coils, FR wires, flexible cables"),
-        ("R3", "Switches", "சுவிட்சுகள்", "toggle-right", "C_SWITCH", 90, "Active", "Modular switches, sockets, regulator plates"),
-        ("R4", "Cables", "கேபிள்கள்", "git-commit", "C_CABLES", 88, "Active", "Industrial heavy-duty cables, submersible cables"),
-        ("R5", "Sockets", "சாக்கெட்டுகள்", "plug", "C_SOCKET", 76, "Active", "3-pin, 2-pin, multi-pin universal sockets"),
-        ("R6", "Fuses", "ஃப்யூஸ்கள்", "shield-alert", "C_FUSE", 70, "Active", "Rewirable fuses, glass fuses, cartridge fuses"),
-        ("R7", "MCBs", "எம்.சி.பி", "cpu", "C_MCB", 68, "Active", "Miniature circuit breakers, isolators, RCCB"),
-        ("R8", "LEDs", "எல்.இ.டி", "sun", "C_LEDS", 92, "Active", "LED panels, downlights, strip lights"),
-        ("R9", "Fans", "மின் விசிறிகள்", "wind", "C_FANS", 22, "Active", "Ceiling fans, exhaust fans, table fans"),
-        ("R10", "Lighting", "விளக்குகள்", "lamp", "C_LIGHT", 98, "Active", "Decorative fixtures, flood lights, street lights"),
-        ("R11", "Junction Box", "ஜங்ஷன் பாக்ஸ்", "square", "C_JBOX", 65, "Active", "Concealed & surface PVC junction boxes"),
-        ("R12", "Tools", "கருவிகள்", "wrench", "C_TOOLS", 11, "Active", "Pliers, testers, screwdrivers, crimpers"),
-        ("R13", "Hardware", "வன்பொருள்", "hammer", "C_HARDWARE", 85, "Active", "Screws, clips, wall plugs, nails"),
-        ("R14", "Raw Material", "மூலப்பொருட்கள்", "box", "C_RAW", 75, "Active", "Insulation PVC, copper terminals, tape"),
-        ("R15", "Panels", "பேனல்கள்", "layers", "C_PANELS", 76, "Active", "Distribution boards, panel boxes, enclosures"),
-        ("R16", "Sensors", "சென்சார்கள்", "radio", "C_SENSORS", 40, "Active", "Motion sensors, dusk-to-dawn sensors"),
-        ("R17", "Motors", "மோட்டார்கள்", "disc", "C_MOTORS", 55, "Active", "Submersible motors, water pump motors"),
-        ("R18", "Batteries", "பேட்டரிகள்", "battery-charging", "C_BATTERY", 60, "Active", "Inverter batteries, dry cells, button cells"),
-        ("R19", "Connectors", "இணைப்பிகள்", "link", "C_CONNECT", 85, "Active", "Terminal blocks, wire caps, lug connectors"),
-        ("R20", "Safety Gear", "பாதுகாப்பு சாதனங்கள்", "shield", "C_SAFETY", 60, "Active", "Insulated gloves, helmets, safety goggles")
+        ("R1", "Bulbs", "ಬಲ್ಬ್‌ಗಳು", "lightbulb", "C_BULBS", 95, "Active", "LED Bulbs, Incandescent, Smart Bulbs"),
+        ("R2", "Wires", "ತಂತಿಗಳು / ವೈರ್‌ಗಳು", "cable", "C_WIRES", 89, "Active", "Copper wire coils, FR wires, flexible cables"),
+        ("R3", "Switches", "ಸ್ವಿಚ್‌ಗಳು", "toggle-right", "C_SWITCH", 90, "Active", "Modular switches, sockets, regulator plates"),
+        ("R4", "Cables", "ಕೇಬಲ್‌ಗಳು", "git-commit", "C_CABLES", 88, "Active", "Industrial heavy-duty cables, submersible cables"),
+        ("R5", "Sockets", "ಸಾಕೆಟ್‌ಗಳು", "plug", "C_SOCKET", 76, "Active", "3-pin, 2-pin, multi-pin universal sockets"),
+        ("R6", "Fuses", "ಫ್ಯೂಸ್‌ಗಳು", "shield-alert", "C_FUSE", 70, "Active", "Rewirable fuses, glass fuses, cartridge fuses"),
+        ("R7", "MCBs", "ಎಂಸಿಬಿ", "cpu", "C_MCB", 68, "Active", "Miniature circuit breakers, isolators, RCCB"),
+        ("R8", "LEDs", "ಎಲ್‌ಇಡಿ", "sun", "C_LEDS", 92, "Active", "LED panels, downlights, strip lights"),
+        ("R9", "Fans", "ವಿದ್ಯುತ್ ಫ್ಯಾನ್‌ಗಳು", "wind", "C_FANS", 22, "Active", "Ceiling fans, exhaust fans, table fans"),
+        ("R10", "Lighting", "ದೀಪಗಳು", "lamp", "C_LIGHT", 98, "Active", "Decorative fixtures, flood lights, street lights"),
+        ("R11", "Junction Box", "ಜಂಕ್ಷನ್ ಬಾಕ್ಸ್", "square", "C_JBOX", 65, "Active", "Concealed & surface PVC junction boxes"),
+        ("R12", "Tools", "ಉಪಕರಣಗಳು", "wrench", "C_TOOLS", 11, "Active", "Pliers, testers, screwdrivers, crimpers"),
+        ("R13", "Hardware", "ಹಾರ್ಡ್‌ವೇರ್", "hammer", "C_HARDWARE", 85, "Active", "Screws, clips, wall plugs, nails"),
+        ("R14", "Raw Material", "ಕಚ್ಚಾ ಸಾಮಗ್ರಿಗಳು", "box", "C_RAW", 75, "Active", "Insulation PVC, copper terminals, tape"),
+        ("R15", "Panels", "ಪ್ಯಾನೆಲ್‌ಗಳು", "layers", "C_PANELS", 76, "Active", "Distribution boards, panel boxes, enclosures"),
+        ("R16", "Sensors", "ಸೆನ್ಸಾರ್‌ಗಳು", "radio", "C_SENSORS", 40, "Active", "Motion sensors, dusk-to-dawn sensors"),
+        ("R17", "Motors", "ಮೋಟಾರ್‌ಗಳು", "disc", "C_MOTORS", 55, "Active", "Submersible motors, water pump motors"),
+        ("R18", "Batteries", "ಬ್ಯಾಟರಿಗಳು", "battery-charging", "C_BATTERY", 60, "Active", "Inverter batteries, dry cells, button cells"),
+        ("R19", "Connectors", "ಕನೆಕ್ಟರ್‌ಗಳು", "link", "C_CONNECT", 85, "Active", "Terminal blocks, wire caps, lug connectors"),
+        ("R20", "Safety Gear", "ಸುರಕ್ಷತಾ ಸಾಧನಗಳು", "shield", "C_SAFETY", 60, "Active", "Insulated gloves, helmets, safety goggles")
     ]
     cur.executemany("INSERT INTO racks VALUES (?, ?, ?, ?, ?, ?, ?, ?)", racks_data)
 
     # 2. Seed Categories
     categories_data = [
-        ("C_BULBS", "Bulbs & Lamps", "பல்புகள் மற்றும் விளக்குகள்", "bulbs", "All types of LED, CFL and filament bulbs", "R1", 1),
-        ("C_WIRES", "Wires & Conduits", "கம்பிகள் மற்றும் குழாய்கள்", "wires", "House wiring, PVC conduits and casing", "R2", 2),
-        ("C_SWITCH", "Switches & Accessories", "சுவிட்சுகள் மற்றும் பாகங்கள்", "switches", "Modular & non-modular switches", "R3", 3),
-        ("C_CABLES", "Industrial Cables", "தொழில்துறை கேபிள்கள்", "cables", "Submersible 3-core, flat and armored cables", "R4", 4),
-        ("C_SOCKET", "Sockets & Plugs", "சாக்கெட்டுகள் மற்றும் பிளக்ஸ்", "sockets", "Wall sockets, industrial plugs and tops", "R5", 5),
-        ("C_FUSE", "Fuses & Protection", "ஃப்யூஸ்கள் மற்றும் பாதுகாப்பு", "fuses", "Kit-kat fuses and safety protection", "R6", 6),
-        ("C_MCB", "Circuit Breakers (MCB/DB)", "சர்க்யூட் பிரேக்கர்கள்", "mcb", "Single pole, double pole MCBs, ELCBs", "R7", 7),
-        ("C_LEDS", "LED Panels & Downlights", "எல்.இ.டி பேனல்கள்", "leds", "Ceiling downlights, slim panels, COBs", "R8", 8),
-        ("C_FANS", "Fans & Ventilation", "மின் விசிறிகள்", "fans", "High-speed ceiling fans and exhausts", "R9", 9),
-        ("C_LIGHT", "Decorative & Commercial", "அலங்கார விளக்குகள்", "lighting", "Gate lights, floodlights and battens", "R10", 10),
-        ("C_TOOLS", "Electrician Tools", "எலக்ட்ரீஷியன் கருவிகள்", "tools", "Professional multimeters, pliers, testers", "R12", 11),
-        ("C_PANELS", "Distribution Boards", "டிஸ்ட்ரிபியூஷன் போர்டுகள்", "panels", "Metal and plastic enclosures and DB boxes", "R15", 12)
+        ("C_BULBS", "Bulbs & Lamps", "ಬಲ್ಬ್‌ಗಳು ಮತ್ತು ದೀಪಗಳು", "bulbs", "All types of LED, CFL and filament bulbs", "R1", 1),
+        ("C_WIRES", "Wires & Conduits", "ತಂತಿಗಳು ಮತ್ತು ಪೈಪ್‌ಗಳು", "wires", "House wiring, PVC conduits and casing", "R2", 2),
+        ("C_SWITCH", "Switches & Accessories", "ಸ್ವಿಚ್‌ಗಳು ಮತ್ತು ಪರಿಕರಗಳು", "switches", "Modular & non-modular switches", "R3", 3),
+        ("C_CABLES", "Industrial Cables", "ಕೈಗಾರಿಕಾ ಕೇಬಲ್‌ಗಳು", "cables", "Submersible 3-core, flat and armored cables", "R4", 4),
+        ("C_SOCKET", "Sockets & Plugs", "ಸಾಕೆಟ್‌ಗಳು ಮತ್ತು ಪ್ಲಗ್‌ಗಳು", "sockets", "Wall sockets, industrial plugs and tops", "R5", 5),
+        ("C_FUSE", "Fuses & Protection", "ಫ್ಯೂಸ್‌ಗಳು ಮತ್ತು ಸುರಕ್ಷತೆ", "fuses", "Kit-kat fuses and safety protection", "R6", 6),
+        ("C_MCB", "Circuit Breakers (MCB/DB)", "ಸರ್ಕ್ಯೂಟ್ ಬ್ರೇಕರ್‌ಗಳು", "mcb", "Single pole, double pole MCBs, ELCBs", "R7", 7),
+        ("C_LEDS", "LED Panels & Downlights", "ಎಲ್‌ಇಡಿ ಪ್ಯಾನೆಲ್‌ಗಳು", "leds", "Ceiling downlights, slim panels, COBs", "R8", 8),
+        ("C_FANS", "Fans & Ventilation", "ವಿದ್ಯುತ್ ಫ್ಯಾನ್‌ಗಳು", "fans", "High-speed ceiling fans and exhausts", "R9", 9),
+        ("C_LIGHT", "Decorative & Commercial", "ಅಲಂಕಾರಿಕ ದೀಪಗಳು", "lighting", "Gate lights, floodlights and battens", "R10", 10),
+        ("C_TOOLS", "Electrician Tools", "ಎಲೆಕ್ಟ್ರಿಷಿಯನ್ ಉಪಕರಣಗಳು", "tools", "Professional multimeters, pliers, testers", "R12", 11),
+        ("C_PANELS", "Distribution Boards", "ವಿತರಣಾ ಬೋರ್ಡ್‌ಗಳು", "panels", "Metal and plastic enclosures and DB boxes", "R15", 12)
     ]
     cur.executemany("INSERT INTO categories VALUES (?, ?, ?, ?, ?, ?, ?, 1)", categories_data)
 
@@ -318,44 +337,44 @@ def seed_all_data(conn):
     # 4. Seed Products (Rich electrical dataset, matching screenshots)
     products_data = [
         # Bulbs (R1)
-        ("P101", "Syska 9W LED Bulb Cool Day Light", "சிஸ்கா 9வாட் எல்.இ.டி பல்பு", "SYS-9W-LED", "890123456001", "C_BULBS", "R1", "B_SYSKA", "SSK-SRL-9W", "Piece", 65.0, 110.0, 95.0, 250, 25, "https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200", "9 Watt B22 LED Bulb, 6500K Cool Daylight, 900 Lumens"),
-        ("P102", "Philips 9W LED Bulb Stellar Bright", "பிலிப்ஸ் 9வாட் எல்.இ.டி பல்பு", "PHI-9W-LED", "890123456002", "C_BULBS", "R1", "B_PHILIPS", "PHIL-B22-9W", "Piece", 70.0, 120.0, 105.0, 180, 20, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200", "Philips Stellar Bright 9W LED Bulb, Energy Saving, B22 cap"),
-        ("P103", "Crompton EcoFit LED Tube 18W", "கிராம்ப்டன் 18வாட் டியூப் லைட்", "CRO-18W-TUB", "890123456003", "C_BULBS", "R1", "B_CROMPTON", "CR-TUB-18W", "Piece", 120.0, 210.0, 180.0, 120, 15, "https://images.unsplash.com/photo-1517991104123-1d56a6e81ed9?w=200", "4 feet 18 Watt LED Batten Tube Light, high glare-free illumination"),
-        ("P104", "Bajaj 9W LED Bulb White Crystal", "பஜாஜ் 9வாட் எல்.இ.டி பல்பு", "BAJ-9W-LED", "890123456004", "C_BULBS", "R1", "B_BAJAJ", "BJ-LED-9W", "Piece", 60.0, 105.0, 90.0, 15, 20, "https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200", "Bajaj crystal white energy efficient B22 bulb (Low Stock)"),
-        ("P105", "Havells 12W LED Bulb Adore", "ஹேவல்ஸ் 12வாட் எல்.இ.டி பல்பு", "HAV-12W-LED", "890123456005", "C_BULBS", "R1", "B_HAVELLS", "HAV-ADR-12W", "Piece", 95.0, 160.0, 140.0, 85, 15, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200", "Havells 12W bright LED bulb, surge protection up to 4kV"),
+        ("P101", "Syska 9W LED Bulb Cool Day Light", "ಸಿಸ್ಕಾ 9W ಎಲ್‌ಇಡಿ ಬಲ್ಬ್", "SYS-9W-LED", "890123456001", "C_BULBS", "R1", "B_SYSKA", "SSK-SRL-9W", "Piece", 65.0, 110.0, 95.0, 250, 25, "https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200", "9 Watt B22 LED Bulb, 6500K Cool Daylight, 900 Lumens"),
+        ("P102", "Philips 9W LED Bulb Stellar Bright", "ಫಿಲಿಪ್ಸ್ 9W ಎಲ್ಇಡಿ ಬಲ್ಬ್", "PHI-9W-LED", "890123456002", "C_BULBS", "R1", "B_PHILIPS", "PHIL-B22-9W", "Piece", 70.0, 120.0, 105.0, 180, 20, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200", "Philips Stellar Bright 9W LED Bulb, Energy Saving, B22 cap"),
+        ("P103", "Crompton EcoFit LED Tube 18W", "ಕ್ರಾಂಪ್ಟನ್ 18W ಟ್ಯೂಬ್ ಲೈಟ್", "CRO-18W-TUB", "890123456003", "C_BULBS", "R1", "B_CROMPTON", "CR-TUB-18W", "Piece", 120.0, 210.0, 180.0, 120, 15, "https://images.unsplash.com/photo-1517991104123-1d56a6e81ed9?w=200", "4 feet 18 Watt LED Batten Tube Light, high glare-free illumination"),
+        ("P104", "Bajaj 9W LED Bulb White Crystal", "ಬಜಾಜ್ 9W ಎಲ್ಇಡಿ ಬಲ್ಬ್", "BAJ-9W-LED", "890123456004", "C_BULBS", "R1", "B_BAJAJ", "BJ-LED-9W", "Piece", 60.0, 105.0, 90.0, 15, 20, "https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200", "Bajaj crystal white energy efficient B22 bulb (Low Stock)"),
+        ("P105", "Havells 12W LED Bulb Adore", "ಹ್ಯಾವೆಲ್ಸ್ 12W ಎಲ್ಇಡಿ ಬಲ್ಬ್", "HAV-12W-LED", "890123456005", "C_BULBS", "R1", "B_HAVELLS", "HAV-ADR-12W", "Piece", 95.0, 160.0, 140.0, 85, 15, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200", "Havells 12W bright LED bulb, surge protection up to 4kV"),
         
         # Wires (R2)
-        ("P106", "Finolex 2.5sqmm FR House Wire (90m)", "பினோலெக்ஸ் 2.5 சதுர மி.மீ வயர்", "FIN-2.5-WIR", "890123456006", "C_WIRES", "R2", "B_FINOLEX", "FIN-FR-25", "Coil", 1150.0, 1550.0, 1420.0, 480, 50, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "Finolex 100% pure electrolytic copper flame retardant PVC wire 90m coil"),
-        ("P107", "Finolex 1.5sqmm FR House Wire (90m)", "பினோலெக்ஸ் 1.5 சதுர மி.மீ வயர்", "FIN-1.5-WIR", "890123456007", "C_WIRES", "R2", "B_FINOLEX", "FIN-FR-15", "Coil", 780.0, 1050.0, 960.0, 320, 40, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "1.5 sq mm copper wire for lighting circuits, 90 meter red coil"),
-        ("P108", "Polycab 4.0sqmm Heavy Duty Wire (90m)", "பாலிகேப் 4.0 சதுர மி.மீ வயர்", "POL-4.0-WIR", "890123456008", "C_WIRES", "R2", "B_POLYCAB", "POL-FR-40", "Coil", 1750.0, 2350.0, 2150.0, 110, 20, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "4 sq mm wire suitable for AC and power circuits"),
-        ("P109", "Anchor 1.0sqmm Advance Wire (90m)", "ஆங்கர் 1.0 சதுர மி.மீ வயர்", "ANC-1.0-WIR", "890123456009", "C_WIRES", "R2", "B_ANCHOR", "ANC-ADV-10", "Coil", 520.0, 720.0, 660.0, 210, 25, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "Anchor by Panasonic 1.0 sq mm copper wire coil"),
+        ("P106", "Finolex 2.5sqmm FR House Wire (90m)", "ಫಿನೋಲೆಕ್ಸ್ 2.5 ಚ.ಮೀ.ಮೀ ವೈರ್", "FIN-2.5-WIR", "890123456006", "C_WIRES", "R2", "B_FINOLEX", "FIN-FR-25", "Coil", 1150.0, 1550.0, 1420.0, 480, 50, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "Finolex 100% pure electrolytic copper flame retardant PVC wire 90m coil"),
+        ("P107", "Finolex 1.5sqmm FR House Wire (90m)", "ಫಿನೋಲೆಕ್ಸ್ 1.5 ಚ.ಮೀ.ಮೀ ವೈರ್", "FIN-1.5-WIR", "890123456007", "C_WIRES", "R2", "B_FINOLEX", "FIN-FR-15", "Coil", 780.0, 1050.0, 960.0, 320, 40, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "1.5 sq mm copper wire for lighting circuits, 90 meter red coil"),
+        ("P108", "Polycab 4.0sqmm Heavy Duty Wire (90m)", "ಪಾಲಿಕ್ಯಾಬ್ 4.0 ಚ.ಮೀ.ಮೀ ವೈರ್", "POL-4.0-WIR", "890123456008", "C_WIRES", "R2", "B_POLYCAB", "POL-FR-40", "Coil", 1750.0, 2350.0, 2150.0, 110, 20, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "4 sq mm wire suitable for AC and power circuits"),
+        ("P109", "Anchor 1.0sqmm Advance Wire (90m)", "ಆಂಕರ್ 1.0 ಚ.ಮೀ.ಮೀ ವೈರ್", "ANC-1.0-WIR", "890123456009", "C_WIRES", "R2", "B_ANCHOR", "ANC-ADV-10", "Coil", 520.0, 720.0, 660.0, 210, 25, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "Anchor by Panasonic 1.0 sq mm copper wire coil"),
 
         # Switches (R3)
-        ("P110", "Havells Fabio 6A 1-Way Modular Switch", "ஹேவல்ஸ் 6A சுவிட்ச்", "HAV-6A-SW1", "890123456010", "C_SWITCH", "R3", "B_HAVELLS", "FAB-6A-1W", "Piece", 24.0, 42.0, 35.0, 420, 50, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Havells Fabio gloss white 6 Amp modular single switch"),
-        ("P111", "Havells Fabio 16A Power Switch", "ஹேவல்ஸ் 16A பவர் சுவிட்ச்", "HAV-16A-SW1", "890123456011", "C_SWITCH", "R3", "B_HAVELLS", "FAB-16A-1W", "Piece", 48.0, 85.0, 72.0, 230, 30, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Havells Fabio 16 Amp heavy appliance power switch with indicator"),
-        ("P112", "Anchor Roma 6A 1-Way Switch", "ஆங்கர் ரோமா 6A சுவிட்ச்", "ANC-ROM-6A", "890123456012", "C_SWITCH", "R3", "B_ANCHOR", "ROMA-6A", "Piece", 22.0, 38.0, 32.0, 350, 40, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Standard Anchor Roma white 6 Amp modular switch"),
-        ("P113", "Legrand Arteor 10A Switch Silver", "லெக்ராண்ட் 10A பிரீமியம் சுவிட்ச்", "LEG-ART-10A", "890123456013", "C_SWITCH", "R3", "B_LEGRAND", "ART-10A-SLV", "Piece", 95.0, 165.0, 140.0, 80, 15, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Premium brushed silver finish 10A switch"),
+        ("P110", "Havells Fabio 6A 1-Way Modular Switch", "ಹ್ಯಾವೆಲ್ಸ್ 6A ಸ್ವಿಚ್", "HAV-6A-SW1", "890123456010", "C_SWITCH", "R3", "B_HAVELLS", "FAB-6A-1W", "Piece", 24.0, 42.0, 35.0, 420, 50, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Havells Fabio gloss white 6 Amp modular single switch"),
+        ("P111", "Havells Fabio 16A Power Switch", "ಹ್ಯಾವೆಲ್ಸ್ 16A ಪವರ್ ಸ್ವಿಚ್", "HAV-16A-SW1", "890123456011", "C_SWITCH", "R3", "B_HAVELLS", "FAB-16A-1W", "Piece", 48.0, 85.0, 72.0, 230, 30, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Havells Fabio 16 Amp heavy appliance power switch with indicator"),
+        ("P112", "Anchor Roma 6A 1-Way Switch", "ಆಂಕರ್ ರೋಮಾ 6A ಸ್ವಿಚ್", "ANC-ROM-6A", "890123456012", "C_SWITCH", "R3", "B_ANCHOR", "ROMA-6A", "Piece", 22.0, 38.0, 32.0, 350, 40, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Standard Anchor Roma white 6 Amp modular switch"),
+        ("P113", "Legrand Arteor 10A Switch Silver", "ಲೆಗ್ರಾಂಡ್ 10A ಪ್ರೀಮಿಯಂ ಸ್ವಿಚ್", "LEG-ART-10A", "890123456013", "C_SWITCH", "R3", "B_LEGRAND", "ART-10A-SLV", "Piece", 95.0, 165.0, 140.0, 80, 15, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Premium brushed silver finish 10A switch"),
 
         # LEDs & Panels (R8)
-        ("P114", "Havells 12W LED Slim Panel Round", "ஹேவல்ஸ் 12வாட் எல்.இ.டி பேனல்", "HAV-12W-PAN", "890123456014", "C_LEDS", "R8", "B_HAVELLS", "12WH8N-PANEL", "Piece", 190.0, 350.0, 290.0, 115, 20, "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=200", "Havells 12W Round White Slim Recessed LED Panel light"),
-        ("P115", "Philips 15W LED Downlight Square", "பிலிப்ஸ் 15வாட் டவுன்லைட்", "PHI-15W-DWN", "890123456015", "C_LEDS", "R8", "B_PHILIPS", "DN-SQ-15W", "Piece", 240.0, 420.0, 360.0, 90, 15, "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=200", "Philips square ceiling downlight with anti-glare diffuser"),
-        ("P116", "Syska 18W Surface LED Panel Light", "சிஸ்கா 18வாட் சர்பேஸ் பேனல்", "SYS-18W-SRF", "890123456016", "C_LEDS", "R8", "B_SYSKA", "SSK-SRF-18W", "Piece", 280.0, 480.0, 410.0, 65, 10, "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=200", "Surface mount circular panel, no false ceiling required"),
+        ("P114", "Havells 12W LED Slim Panel Round", "ಹ್ಯಾವೆಲ್ಸ್ 12W ಎಲ್ಇಡಿ ಪ್ಯಾನೆಲ್", "HAV-12W-PAN", "890123456014", "C_LEDS", "R8", "B_HAVELLS", "12WH8N-PANEL", "Piece", 190.0, 350.0, 290.0, 115, 20, "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=200", "Havells 12W Round White Slim Recessed LED Panel light"),
+        ("P115", "Philips 15W LED Downlight Square", "ಫಿಲಿಪ್ಸ್ 15W ಡೌನ್‌ಲೈಟ್", "PHI-15W-DWN", "890123456015", "C_LEDS", "R8", "B_PHILIPS", "DN-SQ-15W", "Piece", 240.0, 420.0, 360.0, 90, 15, "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=200", "Philips square ceiling downlight with anti-glare diffuser"),
+        ("P116", "Syska 18W Surface LED Panel Light", "ಸಿಸ್ಕಾ 18W ಸರ್ಫೇಸ್ ಪ್ಯಾನೆಲ್", "SYS-18W-SRF", "890123456016", "C_LEDS", "R8", "B_SYSKA", "SSK-SRF-18W", "Piece", 280.0, 480.0, 410.0, 65, 10, "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=200", "Surface mount circular panel, no false ceiling required"),
 
         # MCBs (R7)
-        ("P117", "Schneider 16A Single Pole C-Curve MCB", "ஷ்னைடர் 16A ஒற்றை துருவ MCB", "SCH-16A-MCB", "890123456017", "C_MCB", "R7", "B_LEGRAND", "A9K-16A", "Piece", 110.0, 190.0, 160.0, 140, 20, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200", "C-Curve 16A Single Pole miniature circuit breaker"),
-        ("P118", "Havells 32A Double Pole Isolator", "ஹேவல்ஸ் 32A ஐசோலேட்டர்", "HAV-32A-ISO", "890123456018", "C_MCB", "R7", "B_HAVELLS", "HAV-DP-32A", "Piece", 210.0, 360.0, 310.0, 75, 12, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200", "Double pole main supply disconnect isolator switch"),
-        ("P119", "Legrand 40A 30mA 2-Pole RCCB", "லெக்ராண்ட் 40A எர்த் லீக்கேஜ் RCCB", "LEG-40A-RCC", "890123456019", "C_MCB", "R7", "B_LEGRAND", "RX3-40A-30M", "Piece", 950.0, 1550.0, 1350.0, 4, 10, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200", "Human shock protection residual current circuit breaker (Low Stock)"),
+        ("P117", "Schneider 16A Single Pole C-Curve MCB", "ಶ್ನೈಡರ್ 16A ಸಿಂಗಲ್ ಪೋಲ್ MCB", "SCH-16A-MCB", "890123456017", "C_MCB", "R7", "B_LEGRAND", "A9K-16A", "Piece", 110.0, 190.0, 160.0, 140, 20, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200", "C-Curve 16A Single Pole miniature circuit breaker"),
+        ("P118", "Havells 32A Double Pole Isolator", "ಹ್ಯಾವೆಲ್ಸ್ 32A ಐಸೋಲೇಟರ್", "HAV-32A-ISO", "890123456018", "C_MCB", "R7", "B_HAVELLS", "HAV-DP-32A", "Piece", 210.0, 360.0, 310.0, 75, 12, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200", "Double pole main supply disconnect isolator switch"),
+        ("P119", "Legrand 40A 30mA 2-Pole RCCB", "ಲೆಗ್ರಾಂಡ್ 40A ಅರ್ಥ್ ಲೀಕೇಜ್ RCCB", "LEG-40A-RCC", "890123456019", "C_MCB", "R7", "B_LEGRAND", "RX3-40A-30M", "Piece", 950.0, 1550.0, 1350.0, 4, 10, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200", "Human shock protection residual current circuit breaker (Low Stock)"),
 
         # Fans (R9)
-        ("P120", "Crompton Hill Briz 1200mm Ceiling Fan", "கிராம்ப்டன் 1200மி.மீ சீலிங் ஃபேன்", "CRO-1200-FAN", "890123456020", "C_FANS", "R9", "B_CROMPTON", "HB-1200-BRW", "Piece", 1250.0, 1850.0, 1650.0, 60, 10, "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200", "Crompton 1200mm 3 blade high air delivery ceiling fan, brown"),
-        ("P121", "Bajaj Maxima 1200mm High Speed Fan", "பஜாஜ் 1200மி.மீ ஹை ஸ்பீட் ஃபேன்", "BAJ-1200-FAN", "890123456021", "C_FANS", "R9", "B_BAJAJ", "MAX-1200-WHT", "Piece", 1180.0, 1720.0, 1520.0, 45, 10, "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200", "High speed 380 RPM ceiling fan with double ball bearing"),
-        ("P122", "Havells Ventil Air DB 200mm Exhaust Fan", "ஹேவல்ஸ் 200மி.மீ எக்ஸாஸ்ட் ஃபேன்", "HAV-200-EXH", "890123456022", "C_FANS", "R9", "B_HAVELLS", "VENT-200-DB", "Piece", 850.0, 1350.0, 1180.0, 0, 8, "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200", "Kitchen and bathroom exhaust fan (Out of Stock)"),
+        ("P120", "Crompton Hill Briz 1200mm Ceiling Fan", "ಕ್ರಾಂಪ್ಟನ್ 1200ಮಿಮೀ ಸೀಲಿಂಗ್ ಫ್ಯಾನ್", "CRO-1200-FAN", "890123456020", "C_FANS", "R9", "B_CROMPTON", "HB-1200-BRW", "Piece", 1250.0, 1850.0, 1650.0, 60, 10, "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200", "Crompton 1200mm 3 blade high air delivery ceiling fan, brown"),
+        ("P121", "Bajaj Maxima 1200mm High Speed Fan", "ಬಜಾಜ್ 1200ಮಿಮೀ ಹೈ ಸ್ಪೀಡ್ ಫ್ಯಾನ್", "BAJ-1200-FAN", "890123456021", "C_FANS", "R9", "B_BAJAJ", "MAX-1200-WHT", "Piece", 1180.0, 1720.0, 1520.0, 45, 10, "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200", "High speed 380 RPM ceiling fan with double ball bearing"),
+        ("P122", "Havells Ventil Air DB 200mm Exhaust Fan", "ಹ್ಯಾವೆಲ್ಸ್ 200ಮಿಮೀ ಎಕ್ಸಾಸ್ಟ್ ಫ್ಯಾನ್", "HAV-200-EXH", "890123456022", "C_FANS", "R9", "B_HAVELLS", "VENT-200-DB", "Piece", 850.0, 1350.0, 1180.0, 0, 8, "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200", "Kitchen and bathroom exhaust fan (Out of Stock)"),
 
         # Tools & Accessories (R12 / R5 / R6)
-        ("P123", "Taparia 8-inch Insulated Combination Plier", "தபாரியா 8 இன்ச் கட்டிங் பிளேயர்", "TAP-8IN-PLI", "890123456023", "C_TOOLS", "R12", "B_ANCHOR", "1621-8N", "Piece", 160.0, 260.0, 220.0, 50, 10, "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=200", "High grade chrome vanadium insulated grip electrician combination plier"),
-        ("P124", "Taparia Line Tester 500V Neon", "தபாரியா நியான் லைன் டெஸ்டர்", "TAP-500V-TES", "890123456024", "C_TOOLS", "R12", "B_ANCHOR", "814-TESTER", "Piece", 25.0, 55.0, 42.0, 120, 20, "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=200", "High sensitivity neon bulb electrical line tester"),
-        ("P125", "Steelgrip PVC Electrical Insulation Tape", "ஸ்டீல்கிரிப் இன்சுலேஷன் டேப்", "STG-PVC-TAP", "890123456025", "C_WIRES", "R2", "B_ANCHOR", "STG-BLCK", "Roll", 10.0, 20.0, 15.0, 450, 50, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "Self extinguishing electrical grade black PVC tape"),
-        ("P126", "Anchor 3-Pin Multi Plug Adaptor with Surge", "ஆங்கர் 3-பின் மல்டி பிளக்", "ANC-3PIN-ADP", "890123456026", "C_SOCKET", "R5", "B_ANCHOR", "ANC-MULTI-3P", "Piece", 45.0, 90.0, 75.0, 85, 15, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Universal 3 pin multi plug adaptor with LED indicator")
+        ("P123", "Taparia 8-inch Insulated Combination Plier", "ಟಪಾರಿಯಾ 8 ಇಂಚಿನ ಕಟಿಂಗ್ ಪ್ಲಯರ್", "TAP-8IN-PLI", "890123456023", "C_TOOLS", "R12", "B_ANCHOR", "1621-8N", "Piece", 160.0, 260.0, 220.0, 50, 10, "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=200", "High grade chrome vanadium insulated grip electrician combination plier"),
+        ("P124", "Taparia Line Tester 500V Neon", "ಟಪಾರಿಯಾ ನಿಯಾನ್ ಲೈನ್ ಟೆಸ್ಟರ್", "TAP-500V-TES", "890123456024", "C_TOOLS", "R12", "B_ANCHOR", "814-TESTER", "Piece", 25.0, 55.0, 42.0, 120, 20, "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=200", "High sensitivity neon bulb electrical line tester"),
+        ("P125", "Steelgrip PVC Electrical Insulation Tape", "ಸ್ಟೀಲ್‌ಗ್ರಿಪ್ ಇನ್ಸುಲೇಷನ್ ಟೇಪ್", "STG-PVC-TAP", "890123456025", "C_WIRES", "R2", "B_ANCHOR", "STG-BLCK", "Roll", 10.0, 20.0, 15.0, 450, 50, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "Self extinguishing electrical grade black PVC tape"),
+        ("P126", "Anchor 3-Pin Multi Plug Adaptor with Surge", "ಆಂಕರ್ 3-ಪಿನ್ ಮಲ್ಟಿ ಪ್ಲಗ್", "ANC-3PIN-ADP", "890123456026", "C_SOCKET", "R5", "B_ANCHOR", "ANC-MULTI-3P", "Piece", 45.0, 90.0, 75.0, 85, 15, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Universal 3 pin multi plug adaptor with LED indicator")
     ]
     cur.executemany("INSERT INTO products VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now', 'localtime'), datetime('now', 'localtime'))", products_data)
 
