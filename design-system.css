@@ -1,0 +1,34 @@
+/* Deepu Enterprises shared UI system — used by the customer website and admin. */
+:root {
+  --de-navy: #292477;
+  --de-navy-soft: #39348A;
+  --de-green: #13A653;
+  --de-green-dark: #087B3B;
+  --de-green-soft: #E9F7EE;
+  --de-blue: #2563EB;
+  --de-bg: #F4F6F9;
+  --de-surface: #FFFFFF;
+  --de-border: #E2E8F0;
+  --de-border-soft: #EDF2F7;
+  --de-ink: #0F172A;
+  --de-muted: #64748B;
+  --de-shadow-sm: 0 1px 3px rgba(15, 23, 42, .06);
+  --de-shadow-md: 0 8px 24px rgba(15, 23, 42, .08);
+  --de-shadow-lg: 0 18px 45px rgba(15, 23, 42, .12);
+  --de-radius-sm: 6px;
+  --de-radius-md: 10px;
+  --de-radius-lg: 14px;
+}
+
+/* Images never overflow their layout box; component rules below set crop/contain behavior. */
+* { font-family: Inter, "DM Sans", "Noto Sans Kannada", "Nirmala UI", Tunga, "Segoe UI", sans-serif; }
+img, picture, video, canvas, svg { max-width: 100%; }
+img { height: auto; }
+button, input, select, textarea { max-width: 100%; }
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid rgba(19, 166, 83, .32);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
