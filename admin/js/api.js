@@ -59,8 +59,8 @@ const API = {
         const e = db.enquiries.find(x => x.enquiry_id === enquiryId);
         if (e) Object.assign(e, fields);
         LocalDB.save(db);
-        this.callAppsScript("updateEnquiry", { enquiry_id: enquiryId, fields });
-        return { updated: !!e };
+        const remote = await this.callAppsScript("updateEnquiry", { enquiry_id: enquiryId, fields });
+        return { updated: !!e, remote: remote || null };
     },
 
     async deleteEnquiry(enquiryId) {
