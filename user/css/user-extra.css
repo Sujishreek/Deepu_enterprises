@@ -33,3 +33,139 @@
 @media(max-width:1100px){.rack-grid{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:820px){.rack-grid{grid-template-columns:repeat(2,1fr)}.header-actions .btn{padding:10px 12px}.hero-search{max-width:none}}
 @media(max-width:480px){.product-grid{grid-template-columns:1fr!important}}
+
+
+/* ------------------------------------------------------------------
+   Shared Admin / Customer design language (Deepu Enterprises)
+   ------------------------------------------------------------------ */
+:root {
+  --green: var(--de-green);
+  --green-dark: var(--de-green-dark);
+  --navy: var(--de-navy);
+  --ink: var(--de-ink);
+  --muted: var(--de-muted);
+  --line: var(--de-border);
+  --paper: var(--de-bg);
+  --white: var(--de-surface);
+  --shadow: var(--de-shadow-md);
+}
+* { font-family: Inter, "DM Sans", "Noto Sans Kannada", "Nirmala UI", Tunga, sans-serif; }
+body { background: var(--de-surface); color: var(--de-ink); font-size: 14px; line-height: 1.55; }
+.site-header {
+  min-height: 76px; height: auto; padding: 10px clamp(16px, 4vw, 64px);
+  background: #fff; border-bottom: 1px solid var(--de-border); box-shadow: var(--de-shadow-sm);
+}
+.brand span { color: var(--de-navy); }
+.brand small { color: var(--de-green-dark); }
+nav { gap: clamp(10px, 1.4vw, 22px); }
+nav a { color: #334155; font-size: 12px; font-weight: 650; }
+nav a:hover, nav a:focus-visible { color: var(--de-green-dark); }
+.btn { border-radius: var(--de-radius-md); font-size: 13px; font-weight: 650; min-height: 40px; }
+.btn-primary { background: linear-gradient(135deg, #13A653, #087B3B); box-shadow: 0 2px 8px rgba(19,166,83,.22); }
+.btn-primary:hover { background: linear-gradient(135deg, #0F8F49, #066332); }
+.btn-outline { border-color: var(--de-border); color: var(--de-navy); }
+.btn-lang { background: #ECFDF5; color: #087B3B; border: 1px solid #A7F3D0; }
+.hero { background: radial-gradient(ellipse at 80% 35%, #D1FAE5 0, transparent 42%), linear-gradient(115deg, #F8FAFC, #F0FDF4); }
+.hero h1, .section-heading h2, .dealer-banner h2 { color: var(--de-navy); letter-spacing: -.04em; }
+.section { padding-block: clamp(64px, 7vw, 96px); }
+.section-heading h2 { font-size: clamp(32px, 4vw, 48px); }
+.section-heading > p, .hero-copy > p { color: #475569; }
+.trust-strip, .dealer-banner, .about-panel, .sidebar { background: var(--de-navy); }
+.catalog-section, .logistics-section, .contact-section { background: var(--de-bg); }
+.value-card, .product-card, .brand-card, .route-card, .coverage-card, .form-card, .stat-card, .panel {
+  border-color: var(--de-border); border-radius: var(--de-radius-lg); box-shadow: var(--de-shadow-sm);
+}
+.product-card:hover, .brand-card:hover, .rack-tile:hover { box-shadow: var(--de-shadow-md); }
+.product-visual { height: clamp(145px, 15vw, 190px); background: #F8FAFC; }
+.product-visual img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; object-position: center; padding: 12px; position: absolute; inset: 0; }
+.product-visual .product-symbol { z-index: 0; }
+.product-body h3, .value-card h3, .route-top strong, .map-caption b, .contact-item b, .contact-item a { color: var(--de-navy); }
+.product-meta button, .active-filter button, .table-action { background: var(--de-green-soft); color: var(--de-green-dark); }
+.stock-tag { z-index: 2; }
+.form-card { max-width: 920px; margin: 18px auto 0; background: #fff; padding: clamp(20px, 3vw, 34px); }
+.form-card h3, .contact-form h3 { color: var(--de-navy); font-size: 20px; }
+.form-grid { gap: 16px; }
+.form-card label, .contact-form label { display: block; min-width: 0; color: #334155; font-size: 12px; font-weight: 650; }
+.form-card input, .form-card select, .form-card textarea, .contact-form input, .contact-form select, .contact-form textarea,
+.catalog-tools input, .catalog-tools select { min-height: 44px; border: 1px solid var(--de-border); border-radius: var(--de-radius-md); color: var(--de-ink); }
+.form-card input:focus, .form-card textarea:focus, .contact-form input:focus, .contact-form textarea:focus,
+.catalog-tools input:focus, .catalog-tools select:focus { border-color: var(--de-green); box-shadow: 0 0 0 3px rgba(19,166,83,.12); }
+.form-message { color: var(--de-green-dark); font-weight: 650; }
+.footer { background: var(--de-navy); }
+.footer-brand img, .brand img, .hero-logo img { max-width: 100%; object-fit: contain; }
+.hero-logo { box-shadow: var(--de-shadow-lg); }
+.site-header img { flex: 0 0 auto; }
+
+/* Every image is constrained by its component, with uncropped product photography. */
+.product-visual, .hero-logo, .brand-card, .search-flyout button { min-width: 0; }
+.search-flyout img { object-fit: contain !important; padding: 3px; }
+.product-card img, .hero-logo img, .brand img, .footer-brand img { max-width: 100%; height: 100%; object-fit: contain; }
+.form-grid > *, .contact-grid > *, .catalog-tools > * { min-width: 0; }
+
+/* Mobile/tablet refinements */
+@media (max-width: 1100px) {
+  .site-header { padding-inline: 18px; gap: 12px; }
+  nav { gap: 10px; }
+  nav a { font-size: 11px; }
+  .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 820px) {
+  .site-header { min-height: 68px; }
+  nav { top: 68px; z-index: 30; border-top: 1px solid var(--de-border); }
+  .header-actions { margin-left: 0; }
+  .header-actions .btn { min-height: 38px; }
+  .hero { grid-template-columns: minmax(0,1fr); }
+  .hero-copy { min-width: 0; }
+  .hero-art { width: 100%; max-width: 480px; margin-inline: auto; }
+  .about-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .logistics-layout, .contact-grid { grid-template-columns: minmax(0,1fr); }
+  .dealer-banner { display: grid; grid-template-columns: minmax(0,1fr); }
+  .dealer-banner .btn { justify-self: start; }
+}
+@media (max-width: 600px) {
+  .site-header { padding: 8px 12px; gap: 8px; }
+  .brand { gap: 6px; }
+  .brand img { width: 38px; height: 42px; }
+  .brand span { font-size: 12px; }
+  .brand small { font-size: 7px; }
+  .header-actions { gap: 5px; }
+  .header-actions .btn { padding: 8px 9px; font-size: 10px; }
+  .header-actions .btn-primary { max-width: 126px; }
+  .menu-toggle { padding: 6px; }
+  .hero { padding: 42px 18px 20px; }
+  .hero h1 { font-size: clamp(34px, 10vw, 42px); }
+  .hero-art { height: 230px; }
+  .hero-logo { width: 170px; height: 170px; }
+  .orbit-one { width: 260px; height: 190px; }
+  .orbit-two { width: 310px; height: 225px; }
+  .section { padding: 58px 16px; }
+  .section-heading h2 { font-size: clamp(30px, 9vw, 36px); }
+  .section-heading { margin-bottom: 26px; }
+  .trust-strip { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .trust-strip > div:not(.trust-disclaimer) { border-right: 0; }
+  .trust-disclaimer { grid-column: 1/-1; }
+  .about-grid, .product-grid, .brand-grid, .route-list { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .catalog-tools { grid-template-columns: minmax(0,1fr); }
+  .catalog-tools input { grid-column: auto; }
+  .product-visual { height: 142px; }
+  .product-body { padding: 12px; }
+  .product-body h3 { font-size: 12px; line-height: 1.4; }
+  .product-meta { align-items: flex-start; gap: 6px; flex-wrap: wrap; }
+  .product-meta button { font-size: 10px; }
+  .dealer-banner { padding: 24px 18px; }
+  .form-grid, .contact-grid { grid-template-columns: minmax(0,1fr); }
+  .form-card { padding: 20px 16px; }
+  .form-card .full { grid-column: auto; }
+  .map-visual { height: 215px; }
+  .footer { padding: 34px 18px 18px; }
+  .modal { padding: 24px 16px; }
+  .modal-form { grid-template-columns: minmax(0,1fr); }
+  .modal-form .full { grid-column: auto; }
+  .inquiry-row { grid-template-columns: minmax(0,1fr) 66px 26px; gap: 6px; }
+  .inquiry-row input { width: 100%; }
+}
+@media (max-width: 380px) {
+  .header-actions .btn-lang { display: none; }
+  .product-grid { grid-template-columns: minmax(0,1fr); }
+  .trust-strip { gap: 8px; }
+}
