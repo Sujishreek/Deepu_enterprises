@@ -5,6 +5,7 @@ deepu-enterprises/
 ├── user/    Customer website (catalog, search, quote requests, dealer form)
 ├── admin/   Inventory / POS admin panel (Products, Stock, Purchases, Sales, Suppliers, Prices, Reports, Settings, Customer Enquiries)
 │   └── backend/   Google Apps Script (Code.gs) + Google Sheets setup guide
+├── shared/  Shared design tokens and responsive media rules
 ├── START-WINDOWS.bat / START-MAC-LINUX.sh
 ```
 
@@ -20,7 +21,7 @@ Always run through the local server (not by double-clicking the HTML files) — 
 - The website reads the **same database** as the admin (`deepu_electrical_v3_kn`): products, Kannada names, retail price, stock status, racks, categories, brands, shop phone/address/name.
 - Edit a product or price in admin → the website updates (live across tabs).
 - Language (English / ಕನ್ನಡ) is shared via `deepu_lang`.
-- Quote requests, dealer applications and contact messages from the website appear in admin → **Customer Enquiries**, where status can be set to New / In Progress / Closed.
+- Quote requests, dealer applications and contact messages from the website appear in admin → **Customer Enquiries**. Admins can call, WhatsApp or email applicants, then approve dealer applications; approval is saved as an **Approved** status. Other enquiries can be set to New / In Progress / Closed.
 - Wholesale and purchase prices are never shown on the website.
 
 ## Google Sheets (optional)
