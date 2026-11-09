@@ -9,16 +9,16 @@ const DEMO_ADMIN_PASS = "Demo@12345";
 /* ---------- Translations (language choice is shared with admin via "deepu_lang") ---------- */
 const TX = {
  en: {
-  nav_home:"Home",nav_sections:"Shop by Section",nav_catalog:"Catalog",nav_brands:"Brands",nav_about:"About",nav_logistics:"Logistics",nav_dealer:"Become a Dealer",nav_contact:"Contact",my_inquiry:"My Inquiry",
+  nav_home:"Home",nav_sections:"Shop by Section",nav_catalog:"Catalog",nav_brands:"Brands",nav_about:"About",nav_logistics:"Logistics",nav_dealer:"Become a Dealer",nav_contact:"Contact",my_inquiry:"My Enquiry",
   hero_eyebrow:"YOUR TRUSTED ELECTRICAL & ELECTRONICS PARTNER",hero_title:"Powering businesses.<br><em>Strengthening</em> relationships.",
   hero_text:"Bulbs, wires, switches, MCBs, fans, lighting and more — wholesale and retail supply from one dependable counter.",
   search_ph:"Search product, brand or SKU… (e.g. syska, vayar, ಬಲ್ಬ್)",explore:"Explore Catalog",serving:"Serving Channarayapatna and surrounding regions",float_a:"One partner.",float_b:"Many supply needs.",
   stat_products_u:"Products",stat_products:"In our live catalog",stat_brands_u:"Brands",stat_brands:"Partner brands",stat_sections_u:"Sections",stat_sections:"Organised store racks",
   disclaimer:"Catalog, stock status and prices update live from the shop's inventory system. Wholesale rates are shared on enquiry.",
   sec_kicker:"SHOP BY SECTION",sec_title:"Find it on<br><em>the right rack.</em>",sec_text:"Our store is organised into racks by product type. Pick a section to see what is available.",
-  cat_kicker:"PRODUCT CATALOG",cat_title:"Find what your<br><em>business needs.</em>",cat_text:"Browse live products with retail prices and availability. Wholesale prices are shared after inquiry or dealer approval.",
+  cat_kicker:"PRODUCT CATALOG",cat_title:"Find what your<br><em>business needs.</em>",cat_text:"Browse live products with retail prices and availability. Wholesale prices are shared after enquiry or dealer approval.",
   all_categories:"All categories",all_brands:"All brands",all:"All",show_all:"Show all products",show_fewer:"Show fewer",no_products:"No matching products found.",
-  in_stock:"In stock",low_stock:"Limited stock",out_stock:"Out of stock",available:"Available",on_request:"On request",add_inquiry:"+ Add inquiry",unavailable:"Unavailable",
+  in_stock:"In stock",low_stock:"Limited stock",out_stock:"Out of stock",available:"Available",on_request:"On request",add_inquiry:"+ Add enquiry",unavailable:"Unavailable",
   wholesale_note:"Wholesale rate on enquiry",filtering:"Showing",clear:"Clear filter",per:"per",
   brand_kicker:"BRANDS & SUPPLY PARTNERS",brand_title:"Brands you<br><em>already trust.</em>",brand_text:"Tap a brand to see its products in our catalog.",items:"items",
   about_kicker:"ABOUT DEEPU ENTERPRISES",about_title:"Built on trust.<br><em>Driven by service.</em>",
@@ -35,14 +35,14 @@ const TX = {
   c_phone:"PHONE",c_email:"OFFICIAL EMAIL",c_loc:"BUSINESS LOCATION",c_wa:"Chat with us on WhatsApp",contact_form_h:"Send an enquiry",f_name:"Your name",f_phone:"Phone number",f_type:"Enquiry type",f_message:"Message",
   t_general:"General",t_product:"Product Enquiry",t_bulk:"Bulk Order",t_dist:"Distribution",send_enquiry:"Send enquiry",
   footer_text:"Distribution and supply support for electricians, retailers and businesses.",rights:"All rights reserved.",admin_link:"Admin",
-  inq_title:"Your inquiry list",inq_intro:"Submit products and quantities. The sales team can respond with availability and wholesale pricing.",inq_empty:"Your inquiry list is empty. Add products from the catalog first.",
-  q_name:"Your name",q_business:"Shop / business",q_notes:"Notes",q_send:"Send quote request",added:"Added to your inquiry list",
+  inq_title:"Your enquiry list",inq_intro:"Submit products and quantities. The sales team can respond with availability and wholesale pricing.",inq_empty:"Your enquiry list is empty. Add products from the catalog first.",
+  q_name:"Your name",q_business:"Shop / business",q_notes:"Notes",q_send:"Send quote request",added:"Added to your enquiry list",
   quote_ok:"Quote request sent. We will contact you soon.",dealer_ok:"Application submitted successfully. We will contact you.",contact_ok:"Thank you. Your enquiry was sent.",
   signin:"Admin sign in",signin_p:"Access inventory and business operations.",f_user:"Email / username",f_pass:"Password",signin_btn:"Sign in",signin_hint:"Demo admin: admin@deepu.local / Demo@12345. Replace with real authentication before going live.",signin_fail:"Incorrect username or password.",
-  wa_text:"Hi Deepu Enterprises, I am checking your online catalog and would like to inquire about bulk prices."
+  wa_text:"Hi Deepu Enterprises, I am checking your online catalog and would like to enquire about bulk prices."
  },
  kn: {
-  nav_home:"ಮುಖಪುಟ",nav_sections:"ವಿಭಾಗಗಳು",nav_catalog:"ಉತ್ಪನ್ನಗಳು",nav_brands:"ಬ್ರಾಂಡ್‌ಗಳು",nav_about:"ನಮ್ಮ ಬಗ್ಗೆ",nav_logistics:"ಸರಬರಾಜು",nav_dealer:"ಡೀಲರ್ ಆಗಿ",nav_contact:"ಸಂಪರ್ಕಿಸಿ",my_inquiry:"ನನ್ನ ವಿಚಾರಣೆ",
+  nav_home:"ಮುಖಪುಟ",nav_sections:"ವಿಭಾಗಗಳು",nav_catalog:"ಉತ್ಪನ್ನಗಳು",nav_brands:"ಬ್ರಾಂಡ್‌ಗಳು",nav_about:"ನಮ್ಮ ಬಗ್ಗೆ",nav_logistics:"ಸರಬರಾಜು",nav_dealer:"ಡೀಲರ್ ಆಗಿ",nav_contact:"ಸಂಪರ್ಕಿಸಿ",my_inquiry:"ನನ್ನ ವಿಚಾರಣೆಗಳು",
   hero_eyebrow:"ನಿಮ್ಮ ವಿಶ್ವಾಸಾರ್ಹ ಎಲೆಕ್ಟ್ರಿಕಲ್ ಮತ್ತು ಎಲೆಕ್ಟ್ರಾನಿಕ್ಸ್ ಪಾಲುದಾರ",hero_title:"ವ್ಯವಹಾರಗಳಿಗೆ ಶಕ್ತಿ.<br><em>ಸಂಬಂಧಗಳಿಗೆ</em> ಬಲ.",
   hero_text:"ಬಲ್ಬ್, ವೈರ್, ಸ್ವಿಚ್, ಎಂಸಿಬಿ, ಫ್ಯಾನ್, ಲೈಟಿಂಗ್ ಮತ್ತು ಇನ್ನಷ್ಟು — ಒಂದೇ ಕೌಂಟರ್‌ನಲ್ಲಿ ಸಗಟು ಮತ್ತು ಚಿಲ್ಲರೆ ಪೂರೈಕೆ.",
   search_ph:"ಉತ್ಪನ್ನ, ಬ್ರಾಂಡ್ ಅಥವಾ SKU ಹುಡುಕಿ… (ಉದಾ. syska, vayar, ಬಲ್ಬ್)",explore:"ಉತ್ಪನ್ನಗಳನ್ನು ನೋಡಿ",serving:"ಚನ್ನರಾಯಪಟ್ಟಣ ಮತ್ತು ಸುತ್ತಮುತ್ತಲಿನ ಪ್ರದೇಶಗಳಿಗೆ ಸೇವೆ",float_a:"ಒಬ್ಬ ಪಾಲುದಾರ.",float_b:"ಹಲವು ಪೂರೈಕೆ ಅಗತ್ಯಗಳು.",
