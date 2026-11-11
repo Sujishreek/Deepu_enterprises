@@ -3,10 +3,13 @@
  * Connects directly to Google Spreadsheet database via Google Apps Script Web App.
  */
 
+const DEFAULT_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw14nhaZ1O7htBB-YSrW_MJShIzClzl8r0PgQVLtzMbsKZWduFteMCrjxFPSZTgn8cLfw/exec";
+
 const API = {
     getApiUrl() {
         const db = LocalDB.load();
-        return (db.settings && db.settings.APPS_SCRIPT_URL) ? db.settings.APPS_SCRIPT_URL.trim() : "";
+        const savedUrl = db.settings && db.settings.APPS_SCRIPT_URL;
+        return savedUrl && savedUrl.trim() ? savedUrl.trim() : DEFAULT_APPS_SCRIPT_URL;
     },
 
     setApiUrl(url) {
@@ -18,20 +21,30 @@ const API = {
 
     async callAppsScript(action, payload = {}) {
         const url = this.getApiUrl();
-        if (!url) return null; // Fall back to LocalDB
+        const request = { action, ...payload };
+        if (action !== "login" && typeof sessionStorage !== "undefined") {
+            const token = sessionStorage.getItem("deepu_admin_token");
+            if (token) request.token = token;
+        }
 
         try {
             // Note: Sending 'text/plain;charset=utf-8' is standard for Google Apps Script Web Apps to avoid CORS OPTIONS preflight
             const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ action, ...payload })
+                body: JSON.stringify(request)
             });
 
             const result = await response.json();
             if (!result.ok) throw new Error(result.error || "Google Sheets API Error");
             return result.data;
         } catch (err) {
+            if (action === "login") throw err;
+            if (err.message && err.message.indexOf("Admin session expired") !== -1) {
+                sessionStorage.removeItem("deepu_admin_token");
+                window.location.reload();
+                throw err;
+            }
             console.warn("Apps Script remote call warning, using local cache:", err);
             return null;
         }

@@ -3,7 +3,7 @@ Sales, POS Billing, Invoicing and Customer Ledger Service
 Handles POS checkout, inventory depletion, invoice generation, and sale returns.
 """
 
-from backend.database import get_connection
+from Admin.Backend.database import get_connection
 import uuid
 from datetime import datetime
 

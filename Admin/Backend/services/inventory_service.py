@@ -3,8 +3,8 @@ Inventory Management Service
 Handles Products CRUD, Rack Operations, Categories, Stock Adjustments, and Auditing.
 """
 
-from backend.database import get_connection
-from backend.services.search_service import search_products
+from Admin.Backend.database import get_connection
+from Admin.Backend.services.search_service import search_products
 import uuid
 from datetime import datetime
 

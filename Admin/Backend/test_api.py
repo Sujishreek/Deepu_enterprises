@@ -2,11 +2,11 @@
 Quick test of the Starlette app endpoints using Starlette TestClient or direct invocation
 """
 import asyncio
-from backend.services.inventory_service import InventoryService
-from backend.services.sales_service import SalesService
-from backend.services.purchase_service import PurchaseService
-from backend.services.search_service import search_products
-from backend.services.sheets_service import GoogleSheetsSyncService
+from Admin.Backend.services.inventory_service import InventoryService
+from Admin.Backend.services.sales_service import SalesService
+from Admin.Backend.services.purchase_service import PurchaseService
+from Admin.Backend.services.search_service import search_products
+from Admin.Backend.services.sheets_service import GoogleSheetsSyncService
 
 def run_tests():
     print("Testing InventoryService...")
@@ -25,8 +25,8 @@ def run_tests():
     print("Search 'vayar' found:", len(res2), [p["name"] for p in res2[:2]])
     assert len(res2) > 0
 
-    res3 = search_products(all_prods, "பல்பு")
-    print("Search Tamil 'bulb' found:", len(res3), [p["name"] for p in res3[:2]])
+    res3 = search_products(all_prods, "ಬಲ್ಬ್")
+    print("Search Kannada 'bulb' found:", len(res3), [p["name"] for p in res3[:2]])
     assert len(res3) > 0
 
     print("Testing Sale creation and inventory decrement...")

@@ -28,11 +28,20 @@ const STATE = {
 
 // ----------------- Initialization -----------------
 
-document.addEventListener("DOMContentLoaded", async () => {
+async function initializeAdminApp() {
     setupEventListeners();
     await loadInitialData();
     navigateTo(STATE.currentView);
     setupRealtimeSync();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.body.dataset.adminAuthenticated === "false") {
+        document.addEventListener("admin-authenticated", initializeAdminApp, { once: true });
+        return;
+    }
+
+    initializeAdminApp();
 });
 
 async function loadInitialData() {
@@ -1758,7 +1767,7 @@ async function renderEnquiriesView() {
                 <p>${isKn ? "ವೆಬ್‌ಸೈಟ್‌ನಿಂದ ಬಂದ ಬೆಲೆ ವಿಚಾರಣೆಗಳು, ಡೀಲರ್ ಅರ್ಜಿಗಳು ಮತ್ತು ಸಂದೇಶಗಳು." : "Quote requests, dealer applications and messages sent from the customer website."} <b>${newCount}</b> ${isKn ? "ಹೊಸ" : "new"}.</p>
             </div>
             <div class="page-header-actions">
-                <a class="btn btn-outline" href="../user/index.html" target="_blank" rel="noopener">🌐 ${isKn ? "ವೆಬ್‌ಸೈಟ್ ವೀಕ್ಷಿಸಿ" : "View website"}</a>
+                <a class="btn btn-outline" href="../../user/index.html" target="_blank" rel="noopener">🌐 ${isKn ? "ವೆಬ್‌ಸೈಟ್ ವೀಕ್ಷಿಸಿ" : "View website"}</a>
             </div>
         </div>
         <div class="enquiry-tabs">${tabs}</div>
@@ -2217,7 +2226,8 @@ function setupUserProfileMenu() {
 function handleDemoSignOut() {
     sessionStorage.removeItem("deepu_role");
     sessionStorage.removeItem("deepu_demo_admin");
-    window.location.href = "../user/index.html";
+    sessionStorage.removeItem("deepu_admin_token");
+    window.location.href = "../../user/index.html";
     return;
     document.getElementById("userProfileDropdown").hidden = true;
     document.getElementById("userProfileButton").setAttribute("aria-expanded", "false");

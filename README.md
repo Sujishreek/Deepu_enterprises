@@ -2,15 +2,15 @@
 
 ```
 deepu-enterprises/
-├── user/    Customer website (catalog, search, quote requests, dealer form)
-├── admin/   Inventory / POS admin panel (Products, Stock, Purchases, Sales, Suppliers, Prices, Reports, Settings, Customer Enquiries)
-│   └── backend/   Google Apps Script (Code.gs) + Google Sheets setup guide
-├── shared/  Shared design tokens and responsive media rules
+├── user/                 Customer website (catalog, search, quote requests, dealer form)
+├── Admin/
+│   ├── Frontend/         Inventory / POS admin panel and its assets
+│   └── Backend/          Google Apps Script API and Google Sheets setup guide
+├── design-system.css     Shared design tokens and responsive media rules
 ├── START-WINDOWS.bat / START-MAC-LINUX.sh
 ```
 
 ## Run
-
 
 Always run through the local server (not by double-clicking the HTML files) — the website and admin share data through the browser's localStorage, which requires the same origin.
 
@@ -22,8 +22,8 @@ Always run through the local server (not by double-clicking the HTML files) — 
 - Wholesale and purchase prices are never shown on the website.
 
 ## Google Sheets (optional)
-See `admin/backend/GOOGLE-SHEETS-SETUP.md`. Paste the new `admin/backend/Code.gs` (it adds an `Enquiries` sheet) and re-run `setupDatabase` on a new sheet, or just let the app create the sheet on first enquiry. Save the Web App URL in admin → Settings; the website then also posts enquiries there.
+See `Admin/Backend/GOOGLE-SHEETS-SETUP.md`. Paste `Admin/Backend/Code.gs` (it adds an `Enquiries` sheet) and initialize the spreadsheet if needed. Admin API actions require a valid session; the public User website can still submit enquiries. Set admin credentials in Apps Script Script Properties. The existing `/admin/index.html` User-site link redirects to `Admin/Frontend/`.
 
 ## Notes
-- The admin login is a demo gate in the browser, not real security. Add real authentication before publishing.
+- The User website's Admin link retains its existing demo sign-in. The Admin panel now also requires Apps Script authentication.
 - Delivery coverage towns come from the earlier website; confirm before publishing.

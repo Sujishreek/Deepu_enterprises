@@ -1,10 +1,12 @@
 # Implementation update — November 2026
 
 ## Active application
-The documented live application is served from `user/` and `admin/`. Both now load `shared/css/design-system.css` and use the same storefront brand palette (green `#13A653`, navy `#292477`, white surfaces and light neutral backgrounds), typography fallbacks and responsive image rules.
+The documented live application is served from `user/` and `Admin/Frontend/`. The Admin frontend includes its loading/login flow and shared storefront design tokens.
 
 ## Dealer applications
 Website dealer applications continue to be stored as `type: "Dealer"` in the shared `enquiries` collection. The Admin → Customer Enquiries view now exposes call, WhatsApp and email actions, a dedicated **Approve dealer** action, and an **Approved** status. Status changes update the local shared store and are sent to the configured Google Apps Script endpoint when one is configured.
+
+Admin data actions use a token issued by the Apps Script login handler. Public enquiry submissions remain available to the User website.
 
 Approval records the decision on the application; it does not create a dealer login or automatically unlock wholesale prices. Those would require a separate authenticated dealer account and pricing policy.
 

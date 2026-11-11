@@ -6,7 +6,7 @@
  * 1. Open Google Sheets (https://sheets.new)
  * 2. Click Extensions > Apps Script
  * 3. Paste this code into Code.gs
- * 4. Run setupDatabase() once to create all sheets, headers, and seed electrical data.
+ * 4. Run setupDatabase_() once to create all sheets, headers, and seed electrical data.
  * 5. Click Deploy > New deployment > Select type: Web app
  * 6. Set "Execute as": Me, "Who has access": Anyone
  * 7. Copy the Web App URL and paste it into the application settings!
@@ -52,13 +52,17 @@ const SHEETS = {
   ],
   Settings: [
     "setting_key", "setting_value", "updated_at"
+  ],
+  Enquiries: [
+    "enquiry_id", "type", "status", "name", "business_name", "phone", "email", "city",
+    "gstin", "address", "subject", "message", "items_json", "created_at"
   ]
 };
 
 // ----------------- Web App Entrypoints -----------------
 
 function doGet(e) {
-  return jsonResponse({
+  return jsonResponse_({
     ok: true,
     service: "Deepu Enterprises Google Sheets Inventory API",
     status: "active",
@@ -73,80 +77,115 @@ function doPost(e) {
     const action = body.action || "";
     let data = null;
 
-    if (action === "setupDatabase") {
-      data = setupDatabase();
+    if (action === "login") {
+      data = loginAdmin_(body);
+    } else if (action !== "submitEnquiry") {
+      requireAdminSession_(body.token);
+    }
+
+    if (action === "login") {
+      // Login is handled before authenticated inventory actions.
+    } else if (action === "setupDatabase") {
+      data = setupDatabase_();
     } else if (action === "getInitialData" || action === "getAllData") {
-      data = getAllData();
+      data = getAllData_();
     } else if (action === "getProducts") {
-      data = getSheetObjects("Products").filter(p => p.is_active != 0 && p.is_active !== "0");
+      data = getSheetObjects_("Products").filter(p => p.is_active != 0 && p.is_active !== "0");
     } else if (action === "saveProduct") {
-      data = saveProduct(body.product);
+      data = saveProduct_(body.product);
     } else if (action === "deleteProduct") {
-      data = deleteProduct(body.product_id);
+      data = deleteProduct_(body.product_id);
     } else if (action === "adjustStock") {
-      data = adjustStock(body);
+      data = adjustStock_(body);
     } else if (action === "createSale") {
-      data = createSale(body.sale);
+      data = createSale_(body.sale);
     } else if (action === "getSales") {
-      data = getSheetObjects("Sales");
+      data = getSheetObjects_("Sales");
     } else if (action === "returnSale") {
-      data = returnSale(body.sale_id, body.reason);
+      data = returnSale_(body.sale_id, body.reason);
     } else if (action === "createPurchase") {
-      data = createPurchase(body.purchase);
+      data = createPurchase_(body.purchase);
     } else if (action === "getPurchases") {
-      data = getSheetObjects("Purchases");
+      data = getSheetObjects_("Purchases");
     } else if (action === "saveSupplier") {
-      data = saveSupplier(body.supplier);
+      data = saveSupplier_(body.supplier);
     } else if (action === "deleteSupplier") {
-      data = deleteSupplier(body.supplier_id);
+      data = deleteSupplier_(body.supplier_id);
     } else if (action === "saveCustomer") {
-      data = saveCustomer(body.customer);
+      data = saveCustomer_(body.customer);
     } else if (action === "deleteCustomer") {
-      data = deleteCustomer(body.customer_id);
+      data = deleteCustomer_(body.customer_id);
     } else if (action === "updatePrices") {
-      data = updatePrices(body.product_id, body.prices);
+      data = updatePrices_(body.product_id, body.prices);
+    } else if (action === "submitEnquiry") {
+      data = submitEnquiry_(body.enquiry);
+    } else if (action === "getEnquiries") {
+      data = getSheetObjects_("Enquiries");
+    } else if (action === "updateEnquiry") {
+      data = updateEnquiry_(body.enquiry_id, body.fields);
     } else if (action === "batchSync") {
-      data = batchSync(body.data);
+      data = batchSync_(body.data);
     } else {
       throw new Error("Unknown action: " + action);
     }
 
-    return jsonResponse({ ok: true, data: data });
+    return jsonResponse_({ ok: true, data: data });
   } catch (err) {
-    return jsonResponse({ ok: false, error: String(err.message || err) });
+    return jsonResponse_({ ok: false, error: String(err.message || err) });
   }
 }
 
-function jsonResponse(obj) {
+function loginAdmin_(body) {
+  const properties = PropertiesService.getScriptProperties();
+  const expectedUsername = properties.getProperty("ADMIN_USERNAME");
+  const expectedPassword = properties.getProperty("ADMIN_PASSWORD");
+  const username = String(body.username || "").trim();
+  const password = String(body.password || "");
+
+  if (!expectedUsername || !expectedPassword) {
+    throw new Error("Admin login is not configured. Set ADMIN_USERNAME and ADMIN_PASSWORD in Script Properties.");
+  }
+  if (username !== expectedUsername || password !== expectedPassword) {
+    throw new Error("Invalid username or password.");
+  }
+
+  const token = Utilities.getUuid() + Utilities.getUuid().replace(/-/g, "");
+  CacheService.getScriptCache().put("admin_session_" + token, username, 21600);
+  return {
+    token: token,
+    user: { username: username, role: "Admin" }
+  };
+}
+
+function requireAdminSession_(token) {
+  if (!token || !CacheService.getScriptCache().get("admin_session_" + token)) {
+    throw new Error("Admin session expired. Sign in again.");
+  }
+}
+
+function jsonResponse_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
 // ----------------- Spreadsheet Helpers -----------------
 
-function getSpreadsheet() {
+function getSpreadsheet_() {
   const props = PropertiesService.getScriptProperties();
   const id = props.getProperty("SPREADSHEET_ID");
   if (id) {
     return SpreadsheetApp.openById(id);
   }
-  // Fallback to active spreadsheet if container-bound
-  try {
-    const active = SpreadsheetApp.getActiveSpreadsheet();
-    if (active) {
-      props.setProperty("SPREADSHEET_ID", active.getId());
-      return active;
-    }
-  } catch (e) {}
-
-  // Or create new
-  const created = SpreadsheetApp.create("Deepu Enterprises — Electrical Inventory DB");
-  props.setProperty("SPREADSHEET_ID", created.getId());
-  return created;
+  const active = SpreadsheetApp.getActiveSpreadsheet();
+  if (!active) {
+    throw new Error("Open this script from the target spreadsheet and run setupDatabase_() to connect it.");
+  }
+  props.setProperty("SPREADSHEET_ID", active.getId());
+  return active;
 }
 
-function getSheet(sheetName) {
-  const ss = getSpreadsheet();
+function getSheet_(sheetName) {
+  const ss = getSpreadsheet_();
   let sheet = ss.getSheetByName(sheetName);
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
@@ -160,9 +199,9 @@ function getSheet(sheetName) {
   return sheet;
 }
 
-function ensureSheetSchema(sheetName) {
+function ensureSheetSchema_(sheetName) {
   const schema = SHEETS[sheetName] || [];
-  const sheet = getSheet(sheetName);
+  const sheet = getSheet_(sheetName);
   if (!schema.length) return sheet;
 
   const lastColumn = sheet.getLastColumn();
@@ -180,8 +219,8 @@ function ensureSheetSchema(sheetName) {
   return sheet;
 }
 
-function getSheetObjects(sheetName) {
-  const sheet = ensureSheetSchema(sheetName);
+function getSheetObjects_(sheetName) {
+  const sheet = ensureSheetSchema_(sheetName);
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) return [];
   const headers = data[0];
@@ -189,21 +228,67 @@ function getSheetObjects(sheetName) {
   return rows.filter(r => r.some(x => x !== "")).map(row => {
     const obj = {};
     headers.forEach((h, i) => {
-      obj[h] = row[i];
+      if (h !== "name_ta") obj[h] = row[i];
     });
+    const legacyTranslationIndex = headers.indexOf("name_ta");
+    if (!obj.name_kn && legacyTranslationIndex !== -1 && isKannadaTranslation_(row[legacyTranslationIndex])) {
+      obj.name_kn = row[legacyTranslationIndex];
+    }
     return obj;
   });
 }
 
-function appendSheetRow(sheetName, obj) {
-  const sheet = ensureSheetSchema(sheetName);
+function isKannadaTranslation_(value) {
+  const text = String(value || "");
+  return /[\u0C80-\u0CFF]/.test(text) && !/[\u0B80-\u0BFF]/.test(text);
+}
+
+function migrateLegacyKannadaNames_(sheetName) {
+  const sheet = ensureSheetSchema_(sheetName);
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return 0;
+
+  const headers = data[0];
+  const oldNameIndex = headers.indexOf("name_ta");
+  const kannadaNameIndex = headers.indexOf("name_kn");
+  if (oldNameIndex === -1 || kannadaNameIndex === -1) return 0;
+
+  let migrated = 0;
+  for (let rowIndex = 1; rowIndex < data.length; rowIndex++) {
+    if (!data[rowIndex][kannadaNameIndex] && isKannadaTranslation_(data[rowIndex][oldNameIndex])) {
+      sheet.getRange(rowIndex + 1, kannadaNameIndex + 1).setValue(data[rowIndex][oldNameIndex]);
+      migrated++;
+    }
+  }
+  return migrated;
+}
+
+function appendSheetRow_(sheetName, obj) {
+  const sheet = ensureSheetSchema_(sheetName);
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const row = headers.map(h => obj[h] === undefined ? "" : obj[h]);
   sheet.appendRow(row);
 }
 
-function updateSheetRow(sheetName, keyField, keyValue, updatedFields) {
-  const sheet = ensureSheetSchema(sheetName);
+function writeSeedRowsIfEmpty_(sheetName, rows) {
+  const sheet = ensureSheetSchema_(sheetName);
+  if (sheet.getLastRow() > 1 || !rows.length) return false;
+
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const schema = SHEETS[sheetName];
+  const values = rows.map(row => {
+    const seed = {};
+    schema.forEach((header, index) => {
+      seed[header] = row[index] === undefined ? "" : row[index];
+    });
+    return headers.map(header => seed[header] === undefined ? "" : seed[header]);
+  });
+  sheet.getRange(2, 1, values.length, headers.length).setValues(values);
+  return true;
+}
+
+function updateSheetRow_(sheetName, keyField, keyValue, updatedFields) {
+  const sheet = ensureSheetSchema_(sheetName);
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) return false;
   const headers = data[0];
@@ -225,32 +310,33 @@ function updateSheetRow(sheetName, keyField, keyValue, updatedFields) {
 
 // ----------------- Business Logic Operations -----------------
 
-function getAllData() {
+function getAllData_() {
   return {
-    products: getSheetObjects("Products").filter(p => p.is_active != 0 && p.is_active !== "0"),
-    racks: getSheetObjects("Racks"),
-    categories: getSheetObjects("Categories"),
-    brands: getSheetObjects("Brands"),
-    sales: getSheetObjects("Sales"),
-    purchases: getSheetObjects("Purchases"),
-    suppliers: getSheetObjects("Suppliers"),
-    customers: getSheetObjects("Customers"),
-    movements: getSheetObjects("StockMovements").slice(0, 100),
-    settings: getSheetObjects("Settings")
+    products: getSheetObjects_("Products").filter(p => p.is_active != 0 && p.is_active !== "0"),
+    racks: getSheetObjects_("Racks"),
+    categories: getSheetObjects_("Categories"),
+    brands: getSheetObjects_("Brands"),
+    sales: getSheetObjects_("Sales"),
+    purchases: getSheetObjects_("Purchases"),
+    suppliers: getSheetObjects_("Suppliers"),
+    customers: getSheetObjects_("Customers"),
+    movements: getSheetObjects_("StockMovements").slice(0, 100),
+    settings: getSheetObjects_("Settings"),
+    enquiries: getSheetObjects_("Enquiries")
   };
 }
 
-function saveProduct(p) {
+function saveProduct_(p) {
   if (!p.name || !p.sku) throw new Error("Product name and SKU are required.");
   p.product_id = p.product_id || ("P" + Utilities.getUuid().slice(0, 6).toUpperCase());
   p.updated_at = new Date().toISOString();
   p.is_active = 1;
 
-  const exists = updateSheetRow("Products", "product_id", p.product_id, p);
+  const exists = updateSheetRow_("Products", "product_id", p.product_id, p);
   if (!exists) {
-    appendSheetRow("Products", p);
+    appendSheetRow_("Products", p);
     if (Number(p.stock_quantity) > 0) {
-      appendSheetRow("StockMovements", {
+      appendSheetRow_("StockMovements", {
         movement_id: "MOV-" + Utilities.getUuid().slice(0, 8).toUpperCase(),
         product_id: p.product_id,
         movement_type: "Stock In",
@@ -267,13 +353,13 @@ function saveProduct(p) {
   return p;
 }
 
-function deleteProduct(productId) {
-  updateSheetRow("Products", "product_id", productId, { is_active: 0, updated_at: new Date().toISOString() });
+function deleteProduct_(productId) {
+  updateSheetRow_("Products", "product_id", productId, { is_active: 0, updated_at: new Date().toISOString() });
   return { deleted: true };
 }
 
-function adjustStock(x) {
-  const prods = getSheetObjects("Products");
+function adjustStock_(x) {
+  const prods = getSheetObjects_("Products");
   const p = prods.find(item => item.product_id === x.product_id);
   if (!p) throw new Error("Product not found");
 
@@ -281,12 +367,12 @@ function adjustStock(x) {
   const delta = Number(x.delta || 0);
   const newStock = Math.max(0, prev + delta);
 
-  updateSheetRow("Products", "product_id", x.product_id, {
+  updateSheetRow_("Products", "product_id", x.product_id, {
     stock_quantity: newStock,
     updated_at: new Date().toISOString()
   });
 
-  appendSheetRow("StockMovements", {
+  appendSheetRow_("StockMovements", {
     movement_id: "MOV-" + Utilities.getUuid().slice(0, 8).toUpperCase(),
     product_id: x.product_id,
     movement_type: x.movement_type || "Adjustment",
@@ -302,17 +388,17 @@ function adjustStock(x) {
   return { product_id: x.product_id, previous_stock: prev, new_stock: newStock, delta: delta };
 }
 
-function createSale(sale) {
+function createSale_(sale) {
   const saleId = "SAL-" + Utilities.getUuid().slice(0, 8).toUpperCase();
   const year = new Date().getFullYear();
-  const sales = getSheetObjects("Sales");
+  const sales = getSheetObjects_("Sales");
   const invoiceNo = "SAL-" + year + "-" + String(sales.length + 101).padStart(5, "0");
 
   let subtotal = 0;
   const items = sale.items || [];
   if (!items.length) throw new Error("Sale must contain items.");
 
-  const prods = getSheetObjects("Products");
+  const prods = getSheetObjects_("Products");
 
   items.forEach(itm => {
     const p = prods.find(x => x.product_id === itm.product_id);
@@ -322,7 +408,7 @@ function createSale(sale) {
       const lineTotal = qty * rate;
       subtotal += lineTotal;
 
-      appendSheetRow("SaleItems", {
+      appendSheetRow_("SaleItems", {
         item_id: "SI-" + Utilities.getUuid().slice(0, 8).toUpperCase(),
         sale_id: saleId,
         product_id: itm.product_id,
@@ -337,13 +423,13 @@ function createSale(sale) {
       // Decrement stock
       const prevStock = Number(p.stock_quantity || 0);
       const newStock = Math.max(0, prevStock - qty);
-      updateSheetRow("Products", "product_id", itm.product_id, {
+      updateSheetRow_("Products", "product_id", itm.product_id, {
         stock_quantity: newStock,
         updated_at: new Date().toISOString()
       });
 
       // Audit movement
-      appendSheetRow("StockMovements", {
+      appendSheetRow_("StockMovements", {
         movement_id: "MOV-" + Utilities.getUuid().slice(0, 8).toUpperCase(),
         product_id: itm.product_id,
         movement_type: "Sale",
@@ -385,19 +471,19 @@ function createSale(sale) {
     created_by: sale.created_by || "Admin"
   };
 
-  appendSheetRow("Sales", saleRecord);
+  appendSheetRow_("Sales", saleRecord);
   return saleRecord;
 }
 
-function returnSale(saleId, reason) {
-  updateSheetRow("Sales", "sale_id", saleId, { status: "Returned" });
+function returnSale_(saleId, reason) {
+  updateSheetRow_("Sales", "sale_id", saleId, { status: "Returned" });
   return { status: "success", message: "Sale marked as returned in Google Sheets" };
 }
 
-function createPurchase(po) {
+function createPurchase_(po) {
   const pid = "PO-" + Utilities.getUuid().slice(0, 8).toUpperCase();
   const year = new Date().getFullYear();
-  const purchases = getSheetObjects("Purchases");
+  const purchases = getSheetObjects_("Purchases");
   const poNumber = "PO-" + year + "-" + String(purchases.length + 1).padStart(4, "0");
 
   let total = 0;
@@ -406,7 +492,7 @@ function createPurchase(po) {
     const cost = Number(itm.purchase_price || 0);
     total += qty * cost;
 
-    appendSheetRow("PurchaseItems", {
+    appendSheetRow_("PurchaseItems", {
       item_id: "PI-" + Utilities.getUuid().slice(0, 8).toUpperCase(),
       purchase_id: pid,
       product_id: itm.product_id,
@@ -416,18 +502,18 @@ function createPurchase(po) {
     });
 
     // Inward stock increment
-    const prods = getSheetObjects("Products");
+    const prods = getSheetObjects_("Products");
     const p = prods.find(x => x.product_id === itm.product_id);
     if (p) {
       const prev = Number(p.stock_quantity || 0);
       const newStock = prev + qty;
-      updateSheetRow("Products", "product_id", itm.product_id, {
+      updateSheetRow_("Products", "product_id", itm.product_id, {
         stock_quantity: newStock,
         purchase_price: cost,
         updated_at: new Date().toISOString()
       });
 
-      appendSheetRow("StockMovements", {
+      appendSheetRow_("StockMovements", {
         movement_id: "MOV-" + Utilities.getUuid().slice(0, 8).toUpperCase(),
         product_id: itm.product_id,
         movement_type: "Stock In",
@@ -454,20 +540,20 @@ function createPurchase(po) {
     notes: po.notes || "",
     created_at: new Date().toLocaleString()
   };
-  appendSheetRow("Purchases", rec);
+  appendSheetRow_("Purchases", rec);
   return rec;
 }
 
-function saveSupplier(s) {
+function saveSupplier_(s) {
   s.supplier_id = s.supplier_id || ("SUP" + Utilities.getUuid().slice(0, 6).toUpperCase());
   s.created_at = s.created_at || new Date().toISOString();
-  const exists = updateSheetRow("Suppliers", "supplier_id", s.supplier_id, s);
-  if (!exists) appendSheetRow("Suppliers", s);
+  const exists = updateSheetRow_("Suppliers", "supplier_id", s.supplier_id, s);
+  if (!exists) appendSheetRow_("Suppliers", s);
   return s;
 }
 
-function deleteSupplier(id) {
-  const sheet = getSheet("Suppliers");
+function deleteSupplier_(id) {
+  const sheet = getSheet_("Suppliers");
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][0]) === String(id)) {
@@ -478,16 +564,16 @@ function deleteSupplier(id) {
   return { deleted: false };
 }
 
-function saveCustomer(c) {
+function saveCustomer_(c) {
   c.customer_id = c.customer_id || ("CUST" + Utilities.getUuid().slice(0, 6).toUpperCase());
   c.created_at = c.created_at || new Date().toISOString();
-  const exists = updateSheetRow("Customers", "customer_id", c.customer_id, c);
-  if (!exists) appendSheetRow("Customers", c);
+  const exists = updateSheetRow_("Customers", "customer_id", c.customer_id, c);
+  if (!exists) appendSheetRow_("Customers", c);
   return c;
 }
 
-function deleteCustomer(id) {
-  const sheet = getSheet("Customers");
+function deleteCustomer_(id) {
+  const sheet = getSheet_("Customers");
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][0]) === String(id)) {
@@ -498,8 +584,24 @@ function deleteCustomer(id) {
   return { deleted: false };
 }
 
-function updatePrices(productId, prices) {
-  updateSheetRow("Products", "product_id", productId, {
+// Customer enquiries, quote requests and dealer applications from the public user site.
+function submitEnquiry_(e) {
+  if (!e) throw new Error("Missing enquiry");
+  e.enquiry_id = e.enquiry_id || ("ENQ-" + Date.now());
+  e.status = e.status || "New";
+  e.created_at = e.created_at || new Date().toISOString();
+  if (e.items && !e.items_json) e.items_json = JSON.stringify(e.items);
+  appendSheetRow_("Enquiries", e);
+  return e;
+}
+
+function updateEnquiry_(id, fields) {
+  const ok = updateSheetRow_("Enquiries", "enquiry_id", id, fields || {});
+  return { updated: !!ok };
+}
+
+function updatePrices_(productId, prices) {
+  updateSheetRow_("Products", "product_id", productId, {
     purchase_price: prices.purchase_price,
     selling_price: prices.selling_price,
     wholesale_price: prices.wholesale_price,
@@ -508,11 +610,11 @@ function updatePrices(productId, prices) {
   return { updated: true };
 }
 
-function batchSync(payload) {
+function batchSync_(payload) {
   if (!payload) return { synced: false };
   Object.keys(payload).forEach(sheetName => {
     if (SHEETS[sheetName]) {
-      const sheet = getSheet(sheetName);
+      const sheet = getSheet_(sheetName);
       sheet.clear();
       const rows = payload[sheetName];
       if (rows && rows.length) {
@@ -526,21 +628,17 @@ function batchSync(payload) {
 
 // ----------------- Initial Database & Seed Setup -----------------
 
-function setupDatabase() {
-  const ss = getSpreadsheet();
-  
-  // Create all sheets with frozen headers
+function setupDatabase_() {
+  const ss = getSpreadsheet_();
+
   Object.keys(SHEETS).forEach(name => {
-    let sheet = ss.getSheetByName(name) || ss.insertSheet(name);
-    sheet.clear();
+    const sheet = ensureSheetSchema_(name);
     const headers = SHEETS[name];
-    sheet.appendRow(headers);
     sheet.setFrozenRows(1);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#F1F5F9");
   });
 
   // Seed 20 Electrical Racks
-  const racksSheet = ss.getSheetByName("Racks");
   const racks = [
     ["R1", "Bulbs", "ಬಲ್ಬ್‌ಗಳು", "lightbulb", "C_BULBS", 95, "Active", "LED Bulbs, Incandescent, Smart Bulbs"],
     ["R2", "Wires", "ತಂತಿಗಳು", "cable", "C_WIRES", 89, "Active", "Copper wire coils, FR wires"],
@@ -563,10 +661,9 @@ function setupDatabase() {
     ["R19", "Connectors", "ಕನೆಕ್ಟರ್‌ಗಳು", "link", "C_CONNECT", 85, "Active", "Terminal blocks, wire caps"],
     ["R20", "Safety Gear", "ಸುರಕ್ಷತಾ ಸಾಧನಗಳು", "shield", "C_SAFETY", 60, "Active", "Insulated gloves, helmets"]
   ];
-  racksSheet.getRange(2, 1, racks.length, racks[0].length).setValues(racks);
+  writeSeedRowsIfEmpty_("Racks", racks);
 
   // Seed Categories
-  const catsSheet = ss.getSheetByName("Categories");
   const cats = [
     ["C_BULBS", "Bulbs & Lamps", "ಬಲ್ಬ್‌ಗಳು ಮತ್ತು ದೀಪಗಳು", "bulbs", "All LED, CFL and filament bulbs", "R1", 1, 1],
     ["C_WIRES", "Wires & Conduits", "ತಂತಿಗಳು ಮತ್ತು ಕಂಡ್ಯೂಟ್‌ಗಳು", "wires", "House wiring, PVC conduits", "R2", 2, 1],
@@ -581,10 +678,9 @@ function setupDatabase() {
     ["C_TOOLS", "Electrician Tools", "ವಿದ್ಯುತ್ ತಜ್ಞರ ಉಪಕರಣಗಳು", "tools", "Professional multimeters, pliers", "R12", 11, 1],
     ["C_PANELS", "Distribution Boards", "ವಿದ್ಯುತ್ ವಿತರಣಾ ಬೋರ್ಡ್‌ಗಳು", "panels", "Metal and plastic enclosures", "R15", 12, 1]
   ];
-  catsSheet.getRange(2, 1, cats.length, cats[0].length).setValues(cats);
+  writeSeedRowsIfEmpty_("Categories", cats);
 
   // Seed Brands
-  const brandsSheet = ss.getSheetByName("Brands");
   const brands = [
     ["B_PHILIPS", "Philips", "Leading lighting & LED solutions", "philips", 1],
     ["B_SYSKA", "Syska", "LED lighting and smart appliances", "syska", 1],
@@ -597,25 +693,26 @@ function setupDatabase() {
     ["B_POLYCAB", "Polycab", "Cables, wires and solar solutions", "polycab", 1],
     ["B_VGUARD", "V-Guard", "Stabilizers, water heaters and inverters", "vguard", 1]
   ];
-  brandsSheet.getRange(2, 1, brands.length, brands[0].length).setValues(brands);
+  writeSeedRowsIfEmpty_("Brands", brands);
 
   // Seed Products
-  const prodsSheet = ss.getSheetByName("Products");
   const prods = [
-    ["P101", "Syska 9W LED Bulb Cool Day Light", "ಸಿಸ್ಕಾ 9W LED ಬಲ್ಬ್", "SYS-9W-LED", "890123456001", "C_BULBS", "R1", "B_SYSKA", "SSK-SRL-9W", "Piece", 65.0, 110.0, 95.0, 250, 25, "https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200", "9 Watt B22 LED Bulb", 1, new Date().toISOString()],
-    ["P102", "Philips 9W LED Bulb Stellar Bright", "ಫಿಲಿಪ್ಸ್ 9W LED ಬಲ್ಬ್", "PHI-9W-LED", "890123456002", "C_BULBS", "R1", "B_PHILIPS", "PHIL-B22-9W", "Piece", 70.0, 120.0, 105.0, 180, 20, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200", "Philips Stellar Bright 9W LED Bulb", 1, new Date().toISOString()],
-    ["P103", "Crompton EcoFit LED Tube 18W", "ಕ್ರಾಂಪ್ಟನ್ 18W LED ಟ್ಯೂಬ್ ಲೈಟ್", "CRO-18W-TUB", "890123456003", "C_BULBS", "R1", "B_CROMPTON", "CR-TUB-18W", "Piece", 120.0, 210.0, 180.0, 120, 15, "https://images.unsplash.com/photo-1517991104123-1d56a6e81ed9?w=200", "4 feet 18W LED Batten Tube Light", 1, new Date().toISOString()],
-    ["P104", "Bajaj 9W LED Bulb White Crystal", "ಬಜಾಜ್ 9W LED ಬಲ್ಬ್", "BAJ-9W-LED", "890123456004", "C_BULBS", "R1", "B_BAJAJ", "BJ-LED-9W", "Piece", 60.0, 105.0, 90.0, 15, 20, "https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200", "Energy efficient B22 bulb", 1, new Date().toISOString()],
-    ["P105", "Havells 12W LED Bulb Adore", "ಹ್ಯಾವೆಲ್ಸ್ 12W LED ಬಲ್ಬ್", "HAV-12W-LED", "890123456005", "C_BULBS", "R1", "B_HAVELLS", "HAV-ADR-12W", "Piece", 95.0, 160.0, 140.0, 85, 15, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200", "Havells 12W bright LED bulb", 1, new Date().toISOString()],
-    ["P106", "Finolex 2.5sqmm FR House Wire (90m)", "ಫಿನೋಲೆಕ್ಸ್ 2.5 ಚ.ಮೀ FR ಮನೆ ತಂತಿ", "FIN-2.5-WIR", "890123456006", "C_WIRES", "R2", "B_FINOLEX", "FIN-FR-25", "Coil", 1150.0, 1550.0, 1420.0, 480, 50, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "100% pure electrolytic copper wire", 1, new Date().toISOString()],
-    ["P107", "Finolex 1.5sqmm FR House Wire (90m)", "ಫಿನೋಲೆಕ್ಸ್ 1.5 ಚ.ಮೀ FR ಮನೆ ತಂತಿ", "FIN-1.5-WIR", "890123456007", "C_WIRES", "R2", "B_FINOLEX", "FIN-FR-15", "Coil", 780.0, 1050.0, 960.0, 320, 40, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "1.5 sq mm copper wire", 1, new Date().toISOString()],
-    ["P108", "Polycab 4.0sqmm Heavy Duty Wire (90m)", "ಪಾಲಿಕ್ಯಾಬ್ 4.0 ಚ.ಮೀ ಹೆವಿ ಡ್ಯೂಟಿ ತಂತಿ", "POL-4.0-WIR", "890123456008", "C_WIRES", "R2", "B_POLYCAB", "POL-FR-40", "Coil", 1750.0, 2350.0, 2150.0, 110, 20, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "4 sq mm wire for AC circuits", 1, new Date().toISOString()],
-    ["P110", "Havells Fabio 6A 1-Way Modular Switch", "ಹ್ಯಾವೆಲ್ಸ್ ಫ್ಯಾಬಿಯೋ 6A ಮಾಡ್ಯುಲರ್ ಸ್ವಿಚ್", "HAV-6A-SW1", "890123456010", "C_SWITCH", "R3", "B_HAVELLS", "FAB-6A-1W", "Piece", 24.0, 42.0, 35.0, 420, 50, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Gloss white 6 Amp modular switch", 1, new Date().toISOString()],
-    ["P114", "Havells 12W LED Slim Panel Round", "ಹ್ಯಾವೆಲ್ಸ್ 12W LED ಸ್ಲಿಮ್ ಪ್ಯಾನೆಲ್", "HAV-12W-PAN", "890123456014", "C_LEDS", "R8", "B_HAVELLS", "12WH8N-PANEL", "Piece", 190.0, 350.0, 290.0, 115, 20, "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=200", "12W Round Slim Recessed Panel", 1, new Date().toISOString()],
-    ["P117", "Schneider 16A Single Pole C-Curve MCB", "ಷ್ನೈಡರ್ 16A ಸಿಂಗಲ್ ಪೋಲ್ MCB", "SCH-16A-MCB", "890123456017", "C_MCB", "R7", "B_LEGRAND", "A9K-16A", "Piece", 110.0, 190.0, 160.0, 140, 20, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200", "C-Curve 16A Single Pole MCB", 1, new Date().toISOString()],
-    ["P120", "Crompton Hill Briz 1200mm Ceiling Fan", "ಕ್ರಾಂಪ್ಟನ್ ಹಿಲ್ ಬ್ರಿಜ್ 1200mm ಸೀಲಿಂಗ್ ಫ್ಯಾನ್", "CRO-1200-FAN", "890123456020", "C_FANS", "R9", "B_CROMPTON", "HB-1200-BRW", "Piece", 1250.0, 1850.0, 1650.0, 60, 10, "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200", "1200mm high air delivery fan", 1, new Date().toISOString()]
+    ["P101", "Syska 9W LED Bulb Cool Day Light", "ಸಿಸ್ಕಾ 9W LED ಬಲ್ಬ್", "SYS-9W-LED", "890123456001", "C_BULBS", "R1", "1", "B_SYSKA", "SSK-SRL-9W", "Piece", 65.0, 110.0, 95.0, 250, 25, "https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200", "9 Watt B22 LED Bulb", 1, new Date().toISOString()],
+    ["P102", "Philips 9W LED Bulb Stellar Bright", "ಫಿಲಿಪ್ಸ್ 9W LED ಬಲ್ಬ್", "PHI-9W-LED", "890123456002", "C_BULBS", "R1", "2", "B_PHILIPS", "PHIL-B22-9W", "Piece", 70.0, 120.0, 105.0, 180, 20, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200", "Philips Stellar Bright 9W LED Bulb", 1, new Date().toISOString()],
+    ["P103", "Crompton EcoFit LED Tube 18W", "ಕ್ರಾಂಪ್ಟನ್ 18W LED ಟ್ಯೂಬ್ ಲೈಟ್", "CRO-18W-TUB", "890123456003", "C_BULBS", "R1", "3", "B_CROMPTON", "CR-TUB-18W", "Piece", 120.0, 210.0, 180.0, 120, 15, "https://images.unsplash.com/photo-1517991104123-1d56a6e81ed9?w=200", "4 feet 18W LED Batten Tube Light", 1, new Date().toISOString()],
+    ["P104", "Bajaj 9W LED Bulb White Crystal", "ಬಜಾಜ್ 9W LED ಬಲ್ಬ್", "BAJ-9W-LED", "890123456004", "C_BULBS", "R1", "4", "B_BAJAJ", "BJ-LED-9W", "Piece", 60.0, 105.0, 90.0, 15, 20, "https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200", "Energy efficient B22 bulb", 1, new Date().toISOString()],
+    ["P105", "Havells 12W LED Bulb Adore", "ಹ್ಯಾವೆಲ್ಸ್ 12W LED ಬಲ್ಬ್", "HAV-12W-LED", "890123456005", "C_BULBS", "R1", "5", "B_HAVELLS", "HAV-ADR-12W", "Piece", 95.0, 160.0, 140.0, 85, 15, "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200", "Havells 12W bright LED bulb", 1, new Date().toISOString()],
+    ["P106", "Finolex 2.5sqmm FR House Wire (90m)", "ಫಿನೋಲೆಕ್ಸ್ 2.5 ಚ.ಮೀ FR ಮನೆ ತಂತಿ", "FIN-2.5-WIR", "890123456006", "C_WIRES", "R2", "1", "B_FINOLEX", "FIN-FR-25", "Coil", 1150.0, 1550.0, 1420.0, 480, 50, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "100% pure electrolytic copper wire", 1, new Date().toISOString()],
+    ["P107", "Finolex 1.5sqmm FR House Wire (90m)", "ಫಿನೋಲೆಕ್ಸ್ 1.5 ಚ.ಮೀ FR ಮನೆ ತಂತಿ", "FIN-1.5-WIR", "890123456007", "C_WIRES", "R2", "2", "B_FINOLEX", "FIN-FR-15", "Coil", 780.0, 1050.0, 960.0, 320, 40, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "1.5 sq mm copper wire", 1, new Date().toISOString()],
+    ["P108", "Polycab 4.0sqmm Heavy Duty Wire (90m)", "ಪಾಲಿಕ್ಯಾಬ್ 4.0 ಚ.ಮೀ ಹೆವಿ ಡ್ಯೂಟಿ ತಂತಿ", "POL-4.0-WIR", "890123456008", "C_WIRES", "R2", "3", "B_POLYCAB", "POL-FR-40", "Coil", 1750.0, 2350.0, 2150.0, 110, 20, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200", "4 sq mm wire for AC circuits", 1, new Date().toISOString()],
+    ["P110", "Havells Fabio 6A 1-Way Modular Switch", "ಹ್ಯಾವೆಲ್ಸ್ ಫ್ಯಾಬಿಯೋ 6A ಮಾಡ್ಯುಲರ್ ಸ್ವಿಚ್", "HAV-6A-SW1", "890123456010", "C_SWITCH", "R3", "1", "B_HAVELLS", "FAB-6A-1W", "Piece", 24.0, 42.0, 35.0, 420, 50, "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200", "Gloss white 6 Amp modular switch", 1, new Date().toISOString()],
+    ["P114", "Havells 12W LED Slim Panel Round", "ಹ್ಯಾವೆಲ್ಸ್ 12W LED ಸ್ಲಿಮ್ ಪ್ಯಾನೆಲ್", "HAV-12W-PAN", "890123456014", "C_LEDS", "R8", "1", "B_HAVELLS", "12WH8N-PANEL", "Piece", 190.0, 350.0, 290.0, 115, 20, "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=200", "12W Round Slim Recessed Panel", 1, new Date().toISOString()],
+    ["P117", "Schneider 16A Single Pole C-Curve MCB", "ಷ್ನೈಡರ್ 16A ಸಿಂಗಲ್ ಪೋಲ್ MCB", "SCH-16A-MCB", "890123456017", "C_MCB", "R7", "1", "B_LEGRAND", "A9K-16A", "Piece", 110.0, 190.0, 160.0, 140, 20, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200", "C-Curve 16A Single Pole MCB", 1, new Date().toISOString()],
+    ["P120", "Crompton Hill Briz 1200mm Ceiling Fan", "ಕ್ರಾಂಪ್ಟನ್ ಹಿಲ್ ಬ್ರಿಜ್ 1200mm ಸೀಲಿಂಗ್ ಫ್ಯಾನ್", "CRO-1200-FAN", "890123456020", "C_FANS", "R9", "1", "B_CROMPTON", "HB-1200-BRW", "Piece", 1250.0, 1850.0, 1650.0, 60, 10, "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200", "1200mm high air delivery fan", 1, new Date().toISOString()]
   ];
-  prodsSheet.getRange(2, 1, prods.length, prods[0].length).setValues(prods);
+  writeSeedRowsIfEmpty_("Products", prods);
 
-  return { setup: true, spreadsheetUrl: ss.getUrl() };
+  const migratedTranslations = ["Products", "Racks", "Categories"]
+    .reduce((total, sheetName) => total + migrateLegacyKannadaNames_(sheetName), 0);
+  return { setup: true, spreadsheetUrl: ss.getUrl(), migratedTranslations: migratedTranslations };
 }

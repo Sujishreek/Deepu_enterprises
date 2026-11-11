@@ -2,7 +2,7 @@
 Purchase Orders, Inward Stock, Supplier Management and Customer Ledger Service
 """
 
-from backend.database import get_connection
+from Admin.Backend.database import get_connection
 import uuid
 from datetime import datetime
 
