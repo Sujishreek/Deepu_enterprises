@@ -56,13 +56,69 @@ const API = {
         const local = LocalDB.load();
 
         if (remote && typeof remote === "object") {
-            ["products", "racks", "categories", "brands", "sales", "purchases", "purchaseItems", "suppliers", "customers", "movements", "enquiries"].forEach(key => {
+            ["products", "racks", "categories", "brands", "sales", "purchases", "purchaseItems", "suppliers", "customers", "movements", "enquiries", "orders"].forEach(key => {
                 if (Array.isArray(remote[key])) local[key] = remote[key];
             });
             if (remote.settings && typeof remote.settings === "object") local.settings = remote.settings;
             LocalDB.save(local);
         }
         return local;
+    },
+
+    // Customer Purchases & Orders (Live Two-Way Google Sheets Sync)
+    async getOrders() {
+        const remote = await this.callAppsScript("getOrders");
+        const db = LocalDB.load();
+        if (remote && Array.isArray(remote)) {
+            db.orders = remote;
+            LocalDB.save(db);
+            return remote;
+        }
+        return db.orders || [];
+    },
+
+    async createOrder(order) {
+        const db = LocalDB.load();
+        db.orders = db.orders || [];
+        order.order_id = order.order_id || ("ORD-" + Date.now().toString(36).toUpperCase());
+        order.status = order.status || "Pending";
+        order.created_at = order.created_at || new Date().toISOString();
+        db.orders.unshift(order);
+
+        // Decrement stock in local DB
+        if (Array.isArray(order.items)) {
+            order.items.forEach(it => {
+                const p = (db.products || []).find(x => x.product_id === (it.product_id || it.id));
+                if (p) {
+                    const prev = Number(p.stock_quantity || 0);
+                    p.stock_quantity = Math.max(0, prev - Number(it.quantity || it.qty || 1));
+                }
+            });
+        }
+        LocalDB.save(db);
+
+        // Sync with Google Sheets backend
+        const remote = await this.callAppsScript("createOrder", { order });
+        return remote || order;
+    },
+
+    async updateOrderStatus(orderId, newStatus) {
+        const db = LocalDB.load();
+        db.orders = db.orders || [];
+        const ord = db.orders.find(o => o.order_id === orderId);
+        if (ord) {
+            ord.status = newStatus;
+            ord.updated_at = new Date().toISOString();
+        }
+        if (db.sales) {
+            const s = db.sales.find(x => x.sale_id === orderId || x.invoice_no === orderId);
+            if (s) s.status = newStatus;
+        }
+        LocalDB.save(db);
+
+        // Sync with Google Sheets backend
+        const remote = await this.callAppsScript("updateOrderStatus", { order_id: orderId, status: newStatus });
+        return { ok: true, order_id: orderId, status: newStatus, remote };
     },
 
     // Customer enquiries / quote requests / dealer applications sent from the user website

@@ -18,6 +18,7 @@ const STATE = {
     customers: [],
     movements: [],
     enquiries: [],
+    orders: [],
     settings: {},
     cart: [],
     selectedRack: null,
@@ -66,6 +67,7 @@ async function loadInitialData() {
         STATE.customers = data.customers || [];
         STATE.movements = data.movements || [];
         STATE.enquiries = data.enquiries || [];
+        STATE.orders = data.orders || [];
         STATE.settings = data.settings || {};
     } catch (e) {
         console.error("Initial data load failed:", e);
@@ -88,6 +90,20 @@ function assignDefaultRackCells(products) {
 }
 
 function setupRealtimeSync() {
+    // Instant multi-tab synchronization
+    window.addEventListener("storage", e => {
+        if (e.key === "deepu_electrical_v3_kn" || e.key === "deepu_orders") {
+            const db = LocalDB.load();
+            STATE.products = db.products || [];
+            STATE.orders = db.orders || [];
+            STATE.sales = db.sales || [];
+            if (STATE.currentView === "dashboard") renderDashboardView();
+            else if (STATE.currentView === "sales") renderSalesView();
+            else if (STATE.currentView === "products") renderProductsView();
+            else if (STATE.currentView === "stock") renderStockAlertsView();
+        }
+    });
+
     setInterval(async () => {
         try {
             if (API.getApiUrl()) {
@@ -99,21 +115,26 @@ function setupRealtimeSync() {
                     return;
                 }
                 const data = await API.getAllData();
-                STATE.products = data.products || [];
-                if (assignDefaultRackCells(STATE.products)) {
-                    const db = LocalDB.load();
-                    db.products = STATE.products;
-                    LocalDB.save(db);
-                }
-                STATE.sales = data.sales || [];
-                if (STATE.currentView === "dashboard") {
-                    renderDashboardView();
+                if (data) {
+                    STATE.products = data.products || [];
+                    if (assignDefaultRackCells(STATE.products)) {
+                        const db = LocalDB.load();
+                        db.products = STATE.products;
+                        LocalDB.save(db);
+                    }
+                    STATE.orders = data.orders || [];
+                    STATE.sales = data.sales || [];
+                    if (STATE.currentView === "dashboard") {
+                        renderDashboardView();
+                    } else if (STATE.currentView === "sales") {
+                        renderSalesView();
+                    }
                 }
             }
         } catch (e) {
             // silent sync
         }
-    }, 30000);
+    }, 10000);
 }
 
 // ----------------- Statistics Computations -----------------
@@ -239,6 +260,57 @@ async function renderDashboardView() {
 
     const racksHtml = renderRackCards(isKn);
 
+    const ordersList = STATE.orders || [];
+    let ordersRows = ordersList.map(ord => {
+        const curStatus = ord.status || "Pending";
+        let statusStyle = "background: #FEF3C7; color: #B45309; border: 1px solid #FCD34D;";
+        if (curStatus === "Confirmed") statusStyle = "background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD;";
+        else if (curStatus === "Shipped") statusStyle = "background: #E0E7FF; color: #4338CA; border: 1px solid #A5B4FC;";
+        else if (curStatus === "Delivered") statusStyle = "background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7;";
+        else if (curStatus === "Cancelled") statusStyle = "background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5;";
+
+        let itemsDisplay = ord.purchased_items || "";
+        if (!itemsDisplay && Array.isArray(ord.items)) {
+            itemsDisplay = ord.items.map(i => (i.product_name || i.name || i.product_id) + ' (x' + (i.quantity || 1) + ')').join(', ');
+        }
+        if (!itemsDisplay) itemsDisplay = "Standard Electrical Lot";
+
+        return `
+            <tr>
+                <td><b style="color: var(--primary-blue); font-family: monospace; font-size: 0.95rem;">${ord.order_id}</b></td>
+                <td><span style="font-size: 0.82rem; color: var(--text-secondary);">${ord.order_date || ord.created_at || '—'}</span></td>
+                <td>
+                    <div style="font-weight: 700;">${ord.customer_name || 'Customer'}</div>
+                    <small style="color: var(--text-muted); font-size: 0.78rem;">📞 ${ord.customer_phone || '—'}</small>
+                </td>
+                <td style="max-width: 250px; font-size: 0.85rem;" title="${itemsDisplay}">
+                    <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${itemsDisplay}
+                    </div>
+                </td>
+                <td><span class="badge" style="background: var(--bg-hover, #F1F5F9); color: var(--text-primary); font-weight: 700; padding: 2px 8px; border-radius: 4px;">${ord.quantity || 1} pcs</span></td>
+                <td><b style="font-size: 0.95rem; color: var(--text-primary);">₹ ${Number(ord.total_price || 0).toLocaleString('en-IN')}</b></td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; ${statusStyle}">
+                            ${curStatus}
+                        </span>
+                        <select onchange="handleOrderStatusChange('${ord.order_id}', this.value)" style="padding: 2px 6px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-light, #CBD5E1); background: var(--bg-surface, #FFF); cursor: pointer;" title="Update order status">
+                            <option value="Pending" ${curStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Confirmed" ${curStatus === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                            <option value="Shipped" ${curStatus === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                            <option value="Delivered" ${curStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                            <option value="Cancelled" ${curStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </div>
+                </td>
+                <td>
+                    <button class="btn btn-outline btn-sm" onclick="openOrderDetailsModal('${ord.order_id}')" title="View Order Details">👁 ${t('btn_view_invoice')}</button>
+                </td>
+            </tr>
+        `;
+    }).join("") || `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">${isKn ? "ಯಾವುದೇ ಹೊಸ ಆನ್‌ಲೈನ್ ಆರ್ಡರ್‌ಗಳು ದಾಖಲಾಗಿಲ್ಲ. ವೆಬ್‌ಸೈಟ್ ಖರೀದಿಯ ಮಾಹಿತಿಯು ಇಲ್ಲಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಪ್ರಕಟಗೊಳ್ಳುತ್ತದೆ." : "No customer orders yet. Purchases completed on the User Page will automatically appear here."}</td></tr>`;
+
     let recentSalesRows = (s.recent_sales || []).map(sale => `
         <tr>
             <td><b>${sale.invoice_no}</b></td>
@@ -345,6 +417,35 @@ async function renderDashboardView() {
             <button class="btn btn-outline btn-sm" onclick="navigateTo('products')">${t('view_all')} Products</button>
         </div>
         <div class="racks-grid">${racksHtml}</div>
+
+        <div class="table-card" style="margin-bottom: 1.5rem;">
+            <div class="table-header-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span class="table-header-title">📦 ${isKn ? "ಗ್ರಾಹಕರ ಆರ್ಡರ್‌ಗಳು" : "Customer Orders"}</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-outline btn-sm" onclick="syncOrdersNow()" title="Refresh orders">🔄 Refresh</button>
+                    <button class="btn btn-outline btn-sm" onclick="navigateTo('sales')">${t('view_all')} Orders & Sales</button>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date & Time</th>
+                            <th>Customer</th>
+                            <th>Purchased Items</th>
+                            <th>Quantity</th>
+                            <th>Total Price</th>
+                            <th>Order Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>${ordersRows}</tbody>
+                </table>
+            </div>
+        </div>
 
         <div class="table-card">
             <div class="table-header-bar">
@@ -484,6 +585,136 @@ function renderSalesTrendChart(trendData) {
         ctx.fillText(pt.label, pt.x, height - 10);
     });
 }
+
+// ----------------- Customer Orders Management Handlers -----------------
+
+window.handleOrderStatusChange = async function(orderId, newStatus) {
+    try {
+        API.showToast(`Updating order ${orderId} status to "${newStatus}"...`, "info");
+        await API.updateOrderStatus(orderId, newStatus);
+
+        const ord = (STATE.orders || []).find(o => o.order_id === orderId);
+        if (ord) ord.status = newStatus;
+
+        const sale = (STATE.sales || []).find(s => s.sale_id === orderId || s.invoice_no === orderId);
+        if (sale) sale.status = newStatus;
+
+        API.showToast(`Order ${orderId} updated to "${newStatus}"!`, "success");
+        if (STATE.currentView === "dashboard") renderDashboardView();
+        else if (STATE.currentView === "sales") renderSalesView();
+    } catch (err) {
+        API.showToast(`Failed to update order status: ${err.message}`, "error");
+    }
+};
+
+window.syncOrdersNow = async function() {
+    try {
+        API.showToast("Refreshing latest orders...", "info");
+        const data = await API.getAllData();
+        if (data) {
+            STATE.orders = data.orders || [];
+            STATE.products = data.products || [];
+            STATE.sales = data.sales || [];
+            if (STATE.currentView === "dashboard") renderDashboardView();
+            else if (STATE.currentView === "sales") renderSalesView();
+            API.showToast("Orders updated successfully!", "success");
+        }
+    } catch (err) {
+        API.showToast(`Sync error: ${err.message}`, "error");
+    }
+};
+
+window.openOrderDetailsModal = function(orderId) {
+    const ord = (STATE.orders || []).find(o => o.order_id === orderId) || (LocalDB.load().orders || []).find(o => o.order_id === orderId);
+    if (!ord) {
+        API.showToast("Order not found.", "error");
+        return;
+    }
+
+    let items = [];
+    if (Array.isArray(ord.items)) items = ord.items;
+    else if (ord.items_json) {
+        try { items = JSON.parse(ord.items_json); } catch (e) { items = []; }
+    }
+
+    const itemsHtml = items.map((it, idx) => `
+        <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #E2E8F0;">${idx + 1}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #E2E8F0;"><b>${it.product_name || it.name || it.product_id}</b></td>
+            <td style="padding: 8px; border-bottom: 1px solid #E2E8F0;">${it.sku || '—'}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #E2E8F0;">${it.quantity || it.qty || 1}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #E2E8F0;">₹ ${Number(it.unit_price || it.selling_price || 0).toLocaleString('en-IN')}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #E2E8F0;"><b>₹ ${Number((it.quantity || it.qty || 1) * (it.unit_price || it.selling_price || 0)).toLocaleString('en-IN')}</b></td>
+        </tr>
+    `).join("") || `<tr><td colspan="6" style="padding: 8px;">${ord.purchased_items || 'Standard lot'}</td></tr>`;
+
+    const modalBody = document.getElementById("invoiceModalBody");
+    if (!modalBody) return;
+
+    modalBody.innerHTML = `
+        <div class="invoice-sheet" style="padding: 1.5rem; max-width: 650px; margin: 0 auto; background: #fff; font-family: Inter, sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #E2E8F0; padding-bottom: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.4rem; font-weight: 800; color: #0F172A; margin: 0;">Deepu Enterprises</h2>
+                    <p style="font-size: 0.8rem; color: #64748B; margin: 2px 0;">Electrical & Electronics Wholesale & Retail</p>
+                    <p style="font-size: 0.75rem; color: #64748B; margin: 0;">Main Hub, B.M. Road, Channarayapatna, Karnataka - 573116</p>
+                </div>
+                <div style="text-align: right;">
+                    <span style="display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; background: #FEF3C7; color: #B45309;">${ord.status || 'Pending'}</span>
+                    <div style="font-family: monospace; font-size: 0.95rem; font-weight: 700; margin-top: 4px;">${ord.order_id}</div>
+                    <small style="color: #64748B;">${ord.order_date || ord.created_at || ''}</small>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1.25rem; font-size: 0.85rem;">
+                <div>
+                    <strong style="color: #475569;">CUSTOMER DETAILS:</strong>
+                    <div style="font-size: 1rem; font-weight: 700; color: #0F172A; margin-top: 2px;">${ord.customer_name || 'Customer'}</div>
+                    <div>📞 ${ord.customer_phone || '—'}</div>
+                    <div>📍 ${ord.customer_address || 'Channarayapatna'}</div>
+                </div>
+                <div style="text-align: right;">
+                    <strong style="color: #475569;">PAYMENT MODE:</strong>
+                    <div style="font-weight: 700; color: #0F172A;">Cash on Delivery</div>
+                    <div style="margin-top: 4px;"><strong style="color: #475569;">CHANNEL:</strong> Online Web Store</div>
+                </div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.85rem;">
+                <thead>
+                    <tr style="background: #F8FAFC; border-bottom: 1px solid #CBD5E1; text-align: left;">
+                        <th style="padding: 8px;">#</th>
+                        <th style="padding: 8px;">Item Description</th>
+                        <th style="padding: 8px;">SKU</th>
+                        <th style="padding: 8px;">Qty</th>
+                        <th style="padding: 8px;">Rate</th>
+                        <th style="padding: 8px;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>${itemsHtml}</tbody>
+            </table>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #E2E8F0; padding-top: 1rem;">
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Update Status:</label>
+                    <select onchange="handleOrderStatusChange('${ord.order_id}', this.value); closeModal('invoicePrintModal');" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #CBD5E1; font-weight: 600; cursor: pointer;">
+                        <option value="Pending" ${ord.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Confirmed" ${ord.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                        <option value="Shipped" ${ord.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                        <option value="Delivered" ${ord.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                        <option value="Cancelled" ${ord.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                    </select>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.85rem; color: #64748B;">Total Quantity: <b>${ord.quantity || 1} pcs</b></div>
+                    <div style="font-size: 1.25rem; font-weight: 800; color: #0F172A; margin-top: 2px;">Total: ₹ ${Number(ord.total_price || 0).toLocaleString('en-IN')}</div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    openModal("invoicePrintModal");
+};
 
 const mobileMenuToggle = document.getElementById("mobileMenuToggle");
 const sidebarBackdrop = document.getElementById("sidebarBackdrop");
@@ -714,7 +945,80 @@ async function renderSalesView(activeTab = "details") {
 
     let tabContent = "";
 
-    if (activeTab === "details") {
+    if (activeTab === "orders") {
+        const ordersList = STATE.orders || [];
+        const rows = ordersList.map(ord => {
+            const curStatus = ord.status || "Pending";
+            let statusStyle = "background: #FEF3C7; color: #B45309; border: 1px solid #FCD34D;";
+            if (curStatus === "Confirmed") statusStyle = "background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD;";
+            else if (curStatus === "Shipped") statusStyle = "background: #E0E7FF; color: #4338CA; border: 1px solid #A5B4FC;";
+            else if (curStatus === "Delivered") statusStyle = "background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7;";
+            else if (curStatus === "Cancelled") statusStyle = "background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5;";
+
+            let itemsDisplay = ord.purchased_items || "";
+            if (!itemsDisplay && Array.isArray(ord.items)) {
+                itemsDisplay = ord.items.map(i => (i.product_name || i.name || i.product_id) + ' (x' + (i.quantity || 1) + ')').join(', ');
+            }
+            if (!itemsDisplay) itemsDisplay = "Standard Electrical Lot";
+
+            return `
+                <tr>
+                    <td><b style="color: var(--primary-blue); font-family: monospace;">${ord.order_id}</b></td>
+                    <td><span style="font-size: 0.82rem; color: var(--text-secondary);">${ord.order_date || ord.created_at || '—'}</span></td>
+                    <td>
+                        <div style="font-weight: 700;">${ord.customer_name || 'Customer'}</div>
+                        <small style="color: var(--text-muted);">📞 ${ord.customer_phone || '—'}</small>
+                    </td>
+                    <td style="max-width: 260px; font-size: 0.85rem;" title="${itemsDisplay}">
+                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${itemsDisplay}</div>
+                    </td>
+                    <td><span class="badge" style="background: var(--bg-hover, #F1F5F9); color: var(--text-primary); font-weight: 700; padding: 2px 8px; border-radius: 4px;">${ord.quantity || 1} pcs</span></td>
+                    <td><b>₹ ${Number(ord.total_price || 0).toLocaleString('en-IN')}</b></td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.4rem;">
+                            <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; ${statusStyle}">${curStatus}</span>
+                            <select onchange="handleOrderStatusChange('${ord.order_id}', this.value)" style="padding: 2px 6px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-light); background: var(--bg-surface); cursor: pointer;">
+                                <option value="Pending" ${curStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="Confirmed" ${curStatus === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                                <option value="Shipped" ${curStatus === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="Delivered" ${curStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="Cancelled" ${curStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="openOrderDetailsModal('${ord.order_id}')">👁 Details</button>
+                    </td>
+                </tr>
+            `;
+        }).join("") || `<tr><td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">${isKn ? "ಯಾವುದೇ ಆನ್‌ಲೈನ್ ಆರ್ಡರ್‌ಗಳು ಇಲ್ಲ" : "No web customer orders found yet."}</td></tr>`;
+
+        tabContent = `
+            <div class="table-card">
+                <div class="table-header-bar" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="table-header-title">📦 Customer Web Orders</span>
+                    <button class="btn btn-outline btn-sm" onclick="syncOrdersNow()">🔄 Refresh Orders</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date & Time</th>
+                                <th>Customer</th>
+                                <th>Purchased Items</th>
+                                <th>Quantity</th>
+                                <th>Total Price</th>
+                                <th>Order Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    } else if (activeTab === "details") {
         const rows = salesList.map(sale => `
             <tr>
                 <td><b>${sale.invoice_no}</b></td>
@@ -810,7 +1114,8 @@ async function renderSalesView(activeTab = "details") {
             </div>
         </div>
 
-        <div style="display: flex; gap: 0.75rem; border-bottom: 1px solid var(--border-light); margin-bottom: 1.5rem;">
+        <div style="display: flex; gap: 0.75rem; border-bottom: 1px solid var(--border-light); margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <button class="btn ${activeTab === 'orders' ? 'btn-primary' : 'btn-outline'}" onclick="renderSalesView('orders')">📦 Customer Orders (${(STATE.orders || []).length})</button>
             <button class="btn ${activeTab === 'details' ? 'btn-primary' : 'btn-outline'}" onclick="renderSalesView('details')">📋 ${t('tab_sales_list')}</button>
             <button class="btn ${activeTab === 'pos' ? 'btn-primary' : 'btn-outline'}" onclick="renderSalesView('pos')">⚡ ${t('tab_new_sale')}</button>
         </div>

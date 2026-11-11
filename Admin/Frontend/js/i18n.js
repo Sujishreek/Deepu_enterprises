@@ -42,6 +42,10 @@ const I18N = {
         sec_stock_trend: "Stock & Sales Trend",
         sec_inventory_dist: "Category Distribution",
         sec_recent_sales: "Recent Transactions",
+        sec_customer_orders: "Customer Orders",
+        col_order_id: "Order ID",
+        col_purchased_items: "Purchased Items",
+        col_order_status: "Order Status",
         sec_top_products: "Top Selling Products",
         view_all: "View All",
 
@@ -166,9 +170,9 @@ const I18N = {
         rep_year: "Year",
         rep_yearly_sales: "Yearly Sales",
         rep_yearly_subtitle: "Annual revenue by completed sales",
-        rep_no_sales_data: "No sales data is available yet. Completed sales from Google Sheets will appear here.",
-        rep_sheets_not_configured: "Google Sheets is not connected, so live sales data cannot be loaded.",
-        rep_sheets_unavailable: "Sales data could not be loaded from Google Sheets. Check the Apps Script connection and try again.",
+        rep_no_sales_data: "No sales data is available yet. Completed sales will appear here.",
+        rep_sheets_not_configured: "Sales database is currently offline.",
+        rep_sheets_unavailable: "Sales data could not be loaded. Please try again.",
         btn_export_csv: "Export CSV",
 
     },
@@ -211,6 +215,10 @@ const I18N = {
         sec_stock_trend: "ಮಾರಾಟ ಮತ್ತು ದಾಸ್ತಾನು ಪ್ರವೃತ್ತಿ",
         sec_inventory_dist: "ವರ್ಗವಾರು ದಾಸ್ತಾನು ಹಂಚಿಕೆ",
         sec_recent_sales: "ಇತ್ತೀಚಿನ ವಹಿವಾಟುಗಳು",
+        sec_customer_orders: "ಗ್ರಾಹಕರ ಆರ್ಡರ್‌ಗಳು",
+        col_order_id: "ಆರ್ಡರ್ ಸಂಖ್ಯೆ",
+        col_purchased_items: "ಖರೀದಿಸಿದ ವಸ್ತುಗಳು",
+        col_order_status: "ಆರ್ಡರ್ ಸ್ಥಿತಿ",
         sec_top_products: "ಹೆಚ್ಚು ಮಾರಾಟವಾದ ಉತ್ಪನ್ನಗಳು",
         view_all: "ಎಲ್ಲವನ್ನೂ ವೀಕ್ಷಿಸಿ",
 
@@ -335,9 +343,9 @@ const I18N = {
         rep_year: "ವರ್ಷ",
         rep_yearly_sales: "ವಾರ್ಷಿಕ ಮಾರಾಟ",
         rep_yearly_subtitle: "ಪೂರ್ಣಗೊಂಡ ಮಾರಾಟಗಳ ವಾರ್ಷಿಕ ಆದಾಯ",
-        rep_no_sales_data: "ಇನ್ನೂ ಮಾರಾಟದ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ. Google Sheets‌ನ ಪೂರ್ಣಗೊಂಡ ಮಾರಾಟಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.",
-        rep_sheets_not_configured: "Google Sheets ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ; ಆದ್ದರಿಂದ ನೇರ ಮಾರಾಟದ ಮಾಹಿತಿಯನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.",
-        rep_sheets_unavailable: "Google Sheets‌ನಿಂದ ಮಾರಾಟದ ಮಾಹಿತಿ ಲೋಡ್ ಆಗಲಿಲ್ಲ. Apps Script ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+        rep_no_sales_data: "ಇನ್ನೂ ಮಾರಾಟದ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ. ಪೂರ್ಣಗೊಂಡ ಮಾರಾಟಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.",
+        rep_sheets_not_configured: "ಮಾರಾಟದ ಮಾಹಿತಿ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.",
+        rep_sheets_unavailable: "ಮಾರಾಟದ ಮಾಹಿತಿ ಲೋಡ್ ಆಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
         btn_export_csv: "CSV ರಫ್ತು ಮಾಡಿ",
 
     }

@@ -101,13 +101,48 @@ const SEED_DATA = {
 
     enquiries: [],
 
+    orders: [
+        {
+            order_id: "ORD-2026-1001",
+            customer_name: "Rajesh Gowda",
+            customer_phone: "9876543210",
+            customer_address: "Main Road, Channarayapatna",
+            purchased_items: "Philips 9W LED Bulb (x10), Havells 6A Switch (x5)",
+            quantity: 15,
+            total_price: 1410,
+            order_date: "08 Nov 2026, 11:30 AM",
+            status: "Pending",
+            items: [
+                { product_id: "P101", name: "Philips 9W LED Bulb", quantity: 10, unit_price: 120, line_total: 1200 },
+                { product_id: "P110", name: "Havells 6A Switch", quantity: 5, unit_price: 42, line_total: 210 }
+            ],
+            created_at: "2026-11-08T11:30:00.000Z"
+        },
+        {
+            order_id: "ORD-2026-1002",
+            customer_name: "Lakshmi Electricals",
+            customer_phone: "9988776655",
+            customer_address: "B.M. Road, Hassan",
+            purchased_items: "Finolex 2.5sqmm Wire (x2), Schneider 16A MCB (x4)",
+            quantity: 6,
+            total_price: 3860,
+            order_date: "09 Nov 2026, 02:15 PM",
+            status: "Shipped",
+            items: [
+                { product_id: "P106", name: "Finolex 2.5sqmm Wire", quantity: 2, unit_price: 1550, line_total: 3100 },
+                { product_id: "P117", name: "Schneider 16A MCB", quantity: 4, unit_price: 190, line_total: 760 }
+            ],
+            created_at: "2026-11-09T14:15:00.000Z"
+        }
+    ],
+
     settings: {
         SHOP_NAME: "Deepu Enterprises",
         SHOP_TAGLINE: "Electrical & Electronics Wholesale & Retail",
         SHOP_PHONE: "+91 98450 12345 / 94480 54321",
         SHOP_GSTIN: "29ABCDE1234F1Z5",
         SHOP_ADDRESS: "Main Hub, B.M. Road, Channarayapatna, Karnataka - 573116",
-        APPS_SCRIPT_URL: ""
+        APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyugtl-Hl3U1Zmv_HjKlcTi2Homf5rheNQltW3VHGwrYJ7lKc03a_45HdJxvkgL25qEMw/exec"
     }
 };
 
@@ -115,7 +150,14 @@ const LocalDB = {
     load() {
         try {
             const raw = localStorage.getItem(LOCAL_DB_KEY);
-            if (raw) return JSON.parse(raw);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed) {
+                    parsed.orders = parsed.orders || [];
+                    if (!parsed.orders.length && SEED_DATA.orders) parsed.orders = structuredClone(SEED_DATA.orders);
+                    return parsed;
+                }
+            }
         } catch (e) {}
         this.save(SEED_DATA);
         return structuredClone(SEED_DATA);
