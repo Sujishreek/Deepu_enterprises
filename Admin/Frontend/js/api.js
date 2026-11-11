@@ -3,7 +3,7 @@
  * Connects directly to Google Spreadsheet database via Google Apps Script Web App.
  */
 
-const DEFAULT_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw14nhaZ1O7htBB-YSrW_MJShIzClzl8r0PgQVLtzMbsKZWduFteMCrjxFPSZTgn8cLfw/exec";
+const DEFAULT_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyugtl-Hl3U1Zmv_HjKlcTi2Homf5rheNQltW3VHGwrYJ7lKc03a_45HdJxvkgL25qEMw/exec";
 
 const API = {
     getApiUrl() {
