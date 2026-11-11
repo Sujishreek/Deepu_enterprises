@@ -13,6 +13,7 @@ const STATE = {
     sales: [],
     salesSourceAvailable: false,
     purchases: [],
+    purchaseItems: [],
     suppliers: [],
     customers: [],
     movements: [],
@@ -60,6 +61,7 @@ async function loadInitialData() {
         STATE.brands = data.brands || [];
         STATE.sales = data.sales || [];
         STATE.purchases = data.purchases || [];
+        STATE.purchaseItems = data.purchaseItems || [];
         STATE.suppliers = data.suppliers || [];
         STATE.customers = data.customers || [];
         STATE.movements = data.movements || [];
@@ -1151,7 +1153,7 @@ async function renderPurchasesView() {
             <td><b>₹ ${Number(po.total_amount).toLocaleString('en-IN')}</b></td>
             <td><span class="badge-stock in">${po.payment_status}</span></td>
             <td>
-                <button class="btn btn-outline btn-sm" onclick="alert('PO Reference: ' + '${po.po_number}')">👁 View Items</button>
+                <button class="btn btn-outline btn-sm" onclick="openPurchaseItemsModal('${escapeEnq(po.purchase_id || po.po_number)}')">👁 View Items</button>
             </td>
         </tr>
     `).join("") || `<tr><td colspan="8" style="text-align: center; padding: 2rem;">No purchase orders recorded yet.</td></tr>`;
@@ -2148,6 +2150,111 @@ function openInvoiceModal(saleId) {
     `;
 
     openModal("invoicePrintModal");
+}
+
+function getPurchaseLineItems(po) {
+    if (Array.isArray(po.items) && po.items.length) {
+        return po.items.map(itm => {
+            const prod = STATE.products.find(p => p.product_id === itm.product_id);
+            const qty = Number(itm.quantity || 0);
+            const price = itm.purchase_price != null ? Number(itm.purchase_price) : null;
+            return {
+                product_name: itm.product_name || prod?.name || itm.product_id || "Item",
+                sku: itm.sku || prod?.sku || "",
+                quantity: qty,
+                purchase_price: price,
+                line_total: itm.line_total != null ? Number(itm.line_total) : (price != null ? qty * price : null)
+            };
+        });
+    }
+
+    const syncedItems = (STATE.purchaseItems || []).filter(pi => pi.purchase_id === po.purchase_id);
+    if (syncedItems.length) {
+        return syncedItems.map(pi => {
+            const prod = STATE.products.find(p => p.product_id === pi.product_id);
+            const qty = Number(pi.quantity || 0);
+            const price = pi.purchase_price != null && pi.purchase_price !== "" ? Number(pi.purchase_price) : null;
+            return {
+                product_name: pi.product_name || prod?.name || pi.product_id || "Item",
+                sku: pi.sku || prod?.sku || "",
+                quantity: qty,
+                purchase_price: price,
+                line_total: pi.line_total != null && pi.line_total !== "" ? Number(pi.line_total) : (price != null ? qty * price : null)
+            };
+        });
+    }
+
+    return (STATE.movements || [])
+        .filter(m => m.reference_id === po.po_number)
+        .map(m => {
+            const prod = STATE.products.find(p =>
+                (m.product_id && p.product_id === m.product_id) ||
+                (m.sku && p.sku === m.sku)
+            );
+            const qty = Number(m.quantity || 0);
+            const price = prod?.purchase_price != null ? Number(prod.purchase_price) : null;
+            return {
+                product_name: m.product_name || prod?.name || m.product_id || "Item",
+                sku: m.sku || prod?.sku || "",
+                quantity: qty,
+                purchase_price: price,
+                line_total: price != null ? qty * price : null
+            };
+        });
+}
+
+function openPurchaseItemsModal(purchaseRef) {
+    const po = (STATE.purchases || []).find(p => p.purchase_id === purchaseRef || p.po_number === purchaseRef);
+    if (!po) {
+        API.showToast("Purchase order not found.", "error");
+        return;
+    }
+
+    const titleEl = document.getElementById("purchaseItemsModalTitle");
+    const bodyEl = document.getElementById("purchaseItemsModalBody");
+    if (titleEl) titleEl.textContent = `📦 Purchase Order — ${po.po_number}`;
+
+    const items = getPurchaseLineItems(po);
+    const itemsRows = items.map((itm, idx) => `
+        <tr>
+            <td style="text-align: center;">${idx + 1}</td>
+            <td><b>${escapeEnq(itm.product_name)}</b>${itm.sku ? `<br><small style="color: #64748B;">SKU: ${escapeEnq(itm.sku)}</small>` : ""}</td>
+            <td style="text-align: center;">${itm.quantity}</td>
+            <td style="text-align: right;">${itm.purchase_price != null ? `₹ ${itm.purchase_price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</td>
+            <td style="text-align: right;"><b>${itm.line_total != null ? `₹ ${itm.line_total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}</b></td>
+        </tr>
+    `).join("") || `<tr><td colspan="5" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">No item breakdown recorded for this purchase order.</td></tr>`;
+
+    bodyEl.innerHTML = `
+        <div class="invoice-meta-grid" style="margin-bottom: 1rem;">
+            <div>
+                <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Supplier</div>
+                <div style="font-size: 15px; font-weight: 700;">${escapeEnq(po.supplier_name || "Supplier")}</div>
+                <div style="font-size: 13px; color: #475569;">Invoice: <code>${escapeEnq(po.invoice_number || "—")}</code></div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Order Details</div>
+                <div style="font-size: 13px; color: #475569;">Date: ${escapeEnq(po.created_at || "—")}</div>
+                <div style="font-size: 13px; font-weight: 700; color: #059669;">${escapeEnq(po.payment_status || "Paid")} • ₹ ${Number(po.total_amount || 0).toLocaleString('en-IN')}</div>
+            </div>
+        </div>
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px; text-align: center;">#</th>
+                        <th>Product</th>
+                        <th style="width: 70px; text-align: center;">Qty</th>
+                        <th style="width: 110px; text-align: right;">Unit Cost</th>
+                        <th style="width: 120px; text-align: right;">Line Total</th>
+                    </tr>
+                </thead>
+                <tbody>${itemsRows}</tbody>
+            </table>
+        </div>
+    `;
+
+    openModal("purchaseItemsModal");
 }
 
 function printCurrentInvoice() {

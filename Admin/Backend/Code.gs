@@ -318,6 +318,7 @@ function getAllData_() {
     brands: getSheetObjects_("Brands"),
     sales: getSheetObjects_("Sales"),
     purchases: getSheetObjects_("Purchases"),
+    purchaseItems: getSheetObjects_("PurchaseItems"),
     suppliers: getSheetObjects_("Suppliers"),
     customers: getSheetObjects_("Customers"),
     movements: getSheetObjects_("StockMovements").slice(0, 100),

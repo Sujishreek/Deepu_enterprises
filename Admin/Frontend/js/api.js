@@ -56,7 +56,7 @@ const API = {
         const local = LocalDB.load();
 
         if (remote && typeof remote === "object") {
-            ["products", "racks", "categories", "brands", "sales", "purchases", "suppliers", "customers", "movements", "enquiries"].forEach(key => {
+            ["products", "racks", "categories", "brands", "sales", "purchases", "purchaseItems", "suppliers", "customers", "movements", "enquiries"].forEach(key => {
                 if (Array.isArray(remote[key])) local[key] = remote[key];
             });
             if (remote.settings && typeof remote.settings === "object") local.settings = remote.settings;
@@ -290,6 +290,7 @@ const API = {
 
         let total = 0;
         let totalQty = 0;
+        const lineItems = [];
 
         (po.items || []).forEach(itm => {
             const p = db.products.find(x => x.product_id === itm.product_id);
@@ -298,6 +299,15 @@ const API = {
                 const cost = Number(itm.purchase_price || 0);
                 total += qty * cost;
                 totalQty += qty;
+
+                lineItems.push({
+                    product_id: p.product_id,
+                    product_name: p.name,
+                    sku: p.sku,
+                    quantity: qty,
+                    purchase_price: cost,
+                    line_total: qty * cost
+                });
 
                 // Inward stock increment
                 const prev = Number(p.stock_quantity || 0);
@@ -328,8 +338,9 @@ const API = {
             total_amount: total,
             paid_amount: Number(po.paid_amount || total),
             payment_status: "Paid",
-            items_count: (po.items || []).length,
+            items_count: lineItems.length,
             total_quantity: totalQty,
+            items: lineItems,
             created_at: new Date().toLocaleString()
         };
 

@@ -621,6 +621,22 @@
         </div>
     </div>
 
+    <!-- 4. Purchase Order Items Modal -->
+    <div id="purchaseItemsModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 720px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="purchaseItemsModalTitle">📦 Purchase Order Items</h3>
+                <button class="modal-close-btn" onclick="closeModal('purchaseItemsModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="purchaseItemsModalBody">
+                <!-- Dynamically populated purchase items -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('purchaseItemsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="js/i18n.js"></script>
     <script src="js/search.js"></script>
