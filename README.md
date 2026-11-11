@@ -10,7 +10,7 @@ deepu-enterprises/
 ```
 
 ## Run
-  Demo login: `admin@deepu.local` / `Demo@12345`
+
 
 Always run through the local server (not by double-clicking the HTML files) — the website and admin share data through the browser's localStorage, which requires the same origin.
 
