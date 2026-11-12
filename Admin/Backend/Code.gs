@@ -68,6 +68,12 @@ const SHEETS = {
 
 // ----------------- Web App Entrypoints -----------------
 
+function authorizeAndSetup() {
+  const result = setupDatabase_();
+  Logger.log("Database initialized: " + JSON.stringify(result));
+  return result;
+}
+
 function doGet(e) {
   try {
     const action = (e && e.parameter && e.parameter.action) || "";
