@@ -103,8 +103,30 @@ function renderCurrentAdminView() {
 }
 
 function setupRealtimeSync() {
+    function isUserBusy() {
+        if (document.body.classList.contains("modal-open") || document.querySelector(".modal-backdrop.open")) {
+            return true;
+        }
+        const active = document.activeElement;
+        if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT")) {
+            return true;
+        }
+        return false;
+    }
+
+    function dataHasChanged(newData) {
+        if (!newData) return false;
+        if (Array.isArray(newData.orders) && JSON.stringify(newData.orders) !== JSON.stringify(STATE.orders)) return true;
+        if (Array.isArray(newData.products) && JSON.stringify(newData.products) !== JSON.stringify(STATE.products)) return true;
+        if (Array.isArray(newData.sales) && JSON.stringify(newData.sales) !== JSON.stringify(STATE.sales)) return true;
+        if (Array.isArray(newData.enquiries) && JSON.stringify(newData.enquiries) !== JSON.stringify(STATE.enquiries)) return true;
+        return false;
+    }
+
     function handleLiveSync() {
         const db = LocalDB.load();
+        if (!dataHasChanged(db)) return;
+
         STATE.products = db.products || [];
         STATE.orders = db.orders || [];
         STATE.sales = (db.sales && db.sales.length > 0) ? db.sales : (SEED_DATA.sales || []);
@@ -114,7 +136,10 @@ function setupRealtimeSync() {
         STATE.suppliers = db.suppliers || [];
         STATE.purchases = db.purchases || [];
         STATE.settings = db.settings || {};
-        renderCurrentAdminView();
+
+        if (!isUserBusy()) {
+            renderCurrentAdminView();
+        }
     }
 
     if ("BroadcastChannel" in window) {
@@ -128,37 +153,36 @@ function setupRealtimeSync() {
     }
 
     window.addEventListener("storage", e => {
-        if (e.key === "deepu_electrical_v3_kn" || e.key === "deepu_sync_heartbeat" || e.key === "deepu_orders" || e.key === "deepu_user_orders") {
+        if (e.key === "deepu_electrical_v3_kn" || e.key === "deepu_orders" || e.key === "deepu_user_orders") {
             handleLiveSync();
         }
     });
 
     setInterval(async () => {
         try {
-            if (API.getApiUrl()) {
-                if (STATE.currentView === "reports") {
-                    const remoteSales = await API.getRemoteSales();
-                    if (Array.isArray(remoteSales) && remoteSales.length > 0) {
+            if (!API.getApiUrl()) return;
+
+            if (STATE.currentView === "reports") {
+                const remoteSales = await API.getRemoteSales();
+                if (Array.isArray(remoteSales) && remoteSales.length > 0) {
+                    if (JSON.stringify(remoteSales) !== JSON.stringify(STATE.sales)) {
                         STATE.sales = remoteSales;
+                        if (!isUserBusy()) {
+                            renderReportsView(true);
+                        }
                     }
-                    STATE.salesSourceAvailable = true;
-                    renderReportsView(true);
-                    return;
                 }
-                const data = await API.getAllData();
-                if (data) {
-                    if (Array.isArray(data.products) && data.products.length > 0) {
-                        STATE.products = data.products;
-                    }
-                    if (Array.isArray(data.orders)) {
-                        STATE.orders = data.orders;
-                    }
-                    if (Array.isArray(data.sales) && data.sales.length > 0) {
-                        STATE.sales = data.sales;
-                    }
-                    if (Array.isArray(data.enquiries)) {
-                        STATE.enquiries = data.enquiries;
-                    }
+                return;
+            }
+
+            const data = await API.getAllData();
+            if (data && dataHasChanged(data)) {
+                if (Array.isArray(data.products) && data.products.length > 0) STATE.products = data.products;
+                if (Array.isArray(data.orders)) STATE.orders = data.orders;
+                if (Array.isArray(data.sales) && data.sales.length > 0) STATE.sales = data.sales;
+                if (Array.isArray(data.enquiries)) STATE.enquiries = data.enquiries;
+
+                if (!isUserBusy()) {
                     if (STATE.currentView === "dashboard") {
                         renderDashboardView();
                     } else if (STATE.currentView === "sales") {
@@ -169,7 +193,7 @@ function setupRealtimeSync() {
         } catch (e) {
             // silent sync
         }
-    }, 5000);
+    }, 15000);
 }
 
 // ----------------- Statistics Computations -----------------

@@ -24,7 +24,9 @@ const API = {
         if (!savedUrl || savedUrl.indexOf("AKfycbyugtl") !== -1 || !savedUrl.trim()) {
             if (db.settings) {
                 db.settings.APPS_SCRIPT_URL = DEFAULT_APPS_SCRIPT_URL;
-                LocalDB.save(db);
+                try {
+                    localStorage.setItem(LOCAL_DB_KEY, JSON.stringify(db));
+                } catch (e) {}
             }
             return DEFAULT_APPS_SCRIPT_URL;
         }
@@ -70,11 +72,24 @@ const API = {
         const local = LocalDB.load();
 
         if (remote && typeof remote === "object") {
+            let hasChanged = false;
             ["products", "racks", "categories", "brands", "sales", "purchases", "purchaseItems", "suppliers", "customers", "movements", "enquiries", "orders"].forEach(key => {
-                if (Array.isArray(remote[key])) local[key] = remote[key];
+                if (Array.isArray(remote[key])) {
+                    if (JSON.stringify(local[key] || []) !== JSON.stringify(remote[key])) {
+                        local[key] = remote[key];
+                        hasChanged = true;
+                    }
+                }
             });
-            if (remote.settings && typeof remote.settings === "object") local.settings = remote.settings;
-            LocalDB.save(local);
+            if (remote.settings && typeof remote.settings === "object") {
+                if (JSON.stringify(local.settings || {}) !== JSON.stringify(remote.settings)) {
+                    local.settings = remote.settings;
+                    hasChanged = true;
+                }
+            }
+            if (hasChanged) {
+                LocalDB.save(local);
+            }
         }
         return local;
     },
@@ -84,8 +99,10 @@ const API = {
         const remote = await this.callAppsScript("getOrders");
         const db = LocalDB.load();
         if (remote && Array.isArray(remote)) {
-            db.orders = remote;
-            LocalDB.save(db);
+            if (JSON.stringify(db.orders || []) !== JSON.stringify(remote)) {
+                db.orders = remote;
+                LocalDB.save(db);
+            }
             return remote;
         }
         return db.orders || [];
