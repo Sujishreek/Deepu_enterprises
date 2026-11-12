@@ -6,7 +6,7 @@
 
 const DEMO_ADMIN_USER = "admin@deepu.local";
 const DEMO_ADMIN_PASS = "Demo@12345";
-const DEFAULT_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyugtl-Hl3U1Zmv_HjKlcTi2Homf5rheNQltW3VHGwrYJ7lKc03a_45HdJxvkgL25qEMw/exec";
+const DEFAULT_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_4907n5x-M8j-r7YKPbgoGSPY4KqDMdTSQQ8ZJply01M3eJeXcnVi6yfN_4FwYi75uQ/exec";
 
 /* ---------- Translations (shared language toggle with admin via "deepu_lang") ---------- */
 const TX = {
@@ -240,7 +240,11 @@ function shop() {
 
 function getAppsScriptUrl() {
   const s = shop();
-  return (s.APPS_SCRIPT_URL && s.APPS_SCRIPT_URL.trim()) || DEFAULT_APPS_SCRIPT_URL;
+  const savedUrl = s.APPS_SCRIPT_URL;
+  if (!savedUrl || savedUrl.indexOf("AKfycbyugtl") !== -1 || !savedUrl.trim()) {
+    return DEFAULT_APPS_SCRIPT_URL;
+  }
+  return savedUrl.trim();
 }
 
 const activeProducts = () => (db.products || []).filter(p => p.is_active != 0 && p.is_active !== "0");

@@ -3,7 +3,7 @@
  * Connects directly to Google Spreadsheet database via Google Apps Script Web App.
  */
 
-const DEFAULT_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyugtl-Hl3U1Zmv_HjKlcTi2Homf5rheNQltW3VHGwrYJ7lKc03a_45HdJxvkgL25qEMw/exec";
+const DEFAULT_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_4907n5x-M8j-r7YKPbgoGSPY4KqDMdTSQQ8ZJply01M3eJeXcnVi6yfN_4FwYi75uQ/exec";
 
 function broadcastDeepuSync(type, details = {}) {
     try {
@@ -21,7 +21,14 @@ const API = {
     getApiUrl() {
         const db = LocalDB.load();
         const savedUrl = db.settings && db.settings.APPS_SCRIPT_URL;
-        return savedUrl && savedUrl.trim() ? savedUrl.trim() : DEFAULT_APPS_SCRIPT_URL;
+        if (!savedUrl || savedUrl.indexOf("AKfycbyugtl") !== -1 || !savedUrl.trim()) {
+            if (db.settings) {
+                db.settings.APPS_SCRIPT_URL = DEFAULT_APPS_SCRIPT_URL;
+                LocalDB.save(db);
+            }
+            return DEFAULT_APPS_SCRIPT_URL;
+        }
+        return savedUrl.trim();
     },
 
     setApiUrl(url) {

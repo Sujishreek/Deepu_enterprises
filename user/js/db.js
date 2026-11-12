@@ -143,7 +143,7 @@ const SEED_DATA = {
         SHOP_PHONE: "+91 98450 12345 / 94480 54321",
         SHOP_GSTIN: "29ABCDE1234F1Z5",
         SHOP_ADDRESS: "Main Hub, B.M. Road, Channarayapatna, Karnataka - 573116",
-        APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyugtl-Hl3U1Zmv_HjKlcTi2Homf5rheNQltW3VHGwrYJ7lKc03a_45HdJxvkgL25qEMw/exec"
+        APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbw_4907n5x-M8j-r7YKPbgoGSPY4KqDMdTSQQ8ZJply01M3eJeXcnVi6yfN_4FwYi75uQ/exec"
     }
 };
 
