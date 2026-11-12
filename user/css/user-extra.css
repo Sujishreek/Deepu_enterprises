@@ -214,3 +214,110 @@ nav a:hover, nav a:focus-visible { color: var(--de-green-dark); }
 .timeline-step.active .timeline-label { color: #b45309; }
 .order-detail-meta { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; text-align: left; margin: 14px 0; font-size: 12px; line-height: 1.6; }
 .order-detail-meta strong { color: var(--de-navy); }
+
+/* ===== Visual refresh (Nov 10): terracotta header, switch / bulb icons, blue headings, animated logo ===== */
+:root { --hdr-bg: #D48972; --head-blue: #4763AC; }
+.site-header { background: var(--hdr-bg); border-bottom: 1px solid #c07760; }
+.brand span { color: #1f1a5c; }
+.brand small { color: #3b1d12; }
+nav a { color: #2a1810; }
+nav a:hover, nav a:focus-visible { color: #fff; }
+.menu-toggle { color: #2a1810; }
+.btn-lang { background: #fff; color: #2a1810; border: 1px solid #f0d3c8; gap: 7px; }
+.btn-lang .ico-bulb { flex: 0 0 auto; filter: drop-shadow(0 0 4px rgba(254,212,6,.65)); transition: filter .2s, transform .2s; }
+.btn-lang:hover .ico-bulb { filter: drop-shadow(0 0 8px rgba(254,212,6,.95)); transform: scale(1.1); }
+.btn-enquiry { gap: 8px; }
+.btn-enquiry .ico-switch { flex: 0 0 auto; }
+.btn-enquiry .rocker { transition: transform .2s; transform-origin: 12px 12px; }
+.btn-enquiry .led { opacity: .35; transition: opacity .2s; }
+.btn-enquiry.on .led { opacity: 1; filter: drop-shadow(0 0 3px #ff5a52); }
+.btn-enquiry.on .rocker { transform: skewY(-6deg); }
+.btn-enquiry b { background: none; border: 0; border-radius: 0; width: auto; height: auto; min-width: 0; padding: 0; color: #fff; font-weight: 800; }
+
+/* Blue headings */
+.hero h1, .hero h1 em,
+#sections .section-heading h2, #sections .section-heading h2 em,
+#brands .section-heading h2, #brands .section-heading h2 em,
+#about .section-heading h2, #about .section-heading h2 em,
+#logistics .section-heading h2, #logistics .section-heading h2 em,
+#contact .section-heading h2, #contact .section-heading h2 em { color: var(--head-blue); }
+
+/* Logo next to the headline: spins, then fixes in place (repeats every 10s) */
+.hero-logo { animation: logoSpinFix 10s cubic-bezier(.22,.8,.3,1) infinite; will-change: transform; }
+@keyframes logoSpinFix {
+  0%   { transform: rotate(-725deg) scale(.55); opacity: .2; }
+  14%  { transform: rotate(-5deg) scale(1.04); opacity: 1; }
+  18%  { transform: rotate(-5deg) scale(1); }
+  100% { transform: rotate(-5deg) scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .hero-logo { animation: none; } }
+
+/* ===== Refresh 2 (Nov 10): catalog heading, enquiry count, yellow text, styled paragraphs ===== */
+.catalog-section .section-heading h2, .catalog-section .section-heading h2 em { color: var(--head-blue); }
+#cartCount:empty { display: none; }
+
+/* Dark-yellow text */
+.hero .eyebrow { color: #A67600; font-weight: 800; }
+.trust-strip strong, .trust-strip strong small, .trust-strip > div > span, .trust-disclaimer { color: #E0A800; }
+.trust-disclaimer { font-weight: 600; }
+.trust-strip > div:not(.trust-disclaimer) { border-right-color: rgba(224,168,0,.35); }
+
+/* "Our store is organised into racks…" — different style, bolder, coloured */
+#sections .section-heading > p {
+  font-family: Manrope, "DM Sans", "Noto Sans Kannada", sans-serif;
+  font-size: 16px; font-weight: 700; font-style: italic; line-height: 1.7;
+  color: #087B3B; border-left: 4px solid #13A653; padding: 4px 0 4px 16px;
+  background: linear-gradient(90deg, #E9F7EE, transparent 85%); border-radius: 0 8px 8px 0;
+}
+
+/* "Our focus is straightforward…" — bright */
+.about-panel p { color: #FFFFFF; font-size: 15px; font-weight: 600; line-height: 1.75; text-shadow: 0 0 14px rgba(255,255,255,.25); }
+
+
+/* Product image rendering: direct URLs and Google Drive share links */
+.product-visual{overflow:hidden}
+.product-visual .catalog-product-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:10px;z-index:1;background:transparent}
+.product-visual .product-symbol{position:relative;z-index:0}
+.product-image-fallback{display:inline-flex;align-items:center;justify-content:center;background:#eef5f0;color:#167342;border:1px solid #dbe9df;border-radius:8px;font-weight:800;min-width:38px;min-height:38px}
+.product-visual .product-image-fallback{position:absolute;inset:0;margin:auto;width:72px;height:72px;z-index:1}
+.suggestion-product-image{width:38px;height:38px;object-fit:contain;border-radius:6px;background:#f4f7f5}
+
+/* ===== Phone / tablet (<=1100px): ☰ menu, tap, scroll and choose. Desktop keeps inline links. ===== */
+@media (max-width: 1100px) {
+.site-header { flex-wrap: nowrap; gap: 10px; }
+.brand { min-width: 0; flex: 0 1 auto; }
+.menu-toggle { display: grid !important; place-items: center; order: 2; margin-left: auto; width: 42px; height: 40px; font-size: 26px; line-height: 1; cursor: pointer; border-radius: 8px; background: rgba(255,255,255,.35); border: 1px solid rgba(42,24,16,.15); padding: 0; }
+.menu-toggle:hover { background: rgba(255,255,255,.6); }
+.header-actions { order: 3; flex: 0 0 auto; }
+#mainNav {
+  display: none !important; position: absolute; top: 100%; right: clamp(12px, 4vw, 40px); left: auto;
+  width: min(300px, calc(100vw - 24px)); max-height: min(70vh, 460px); overflow-y: auto; overscroll-behavior: contain;
+  flex-direction: column; align-items: stretch; gap: 0; padding: 8px; background: #fff;
+  border: 1px solid #ecd9d0; border-radius: 12px; box-shadow: 0 18px 40px rgba(42,24,16,.22); z-index: 40;
+}
+#mainNav.open { display: flex !important; }
+#mainNav a { display: block; padding: 13px 14px; border-radius: 8px; font-size: 14px; font-weight: 700; color: #2a1810; }
+#mainNav a:hover, #mainNav a:focus-visible { background: #fbeee8; color: #b4533a; }
+#mainNav a + a { box-shadow: inset 0 1px 0 #f4e7e1; }
+}
+
+@media (max-width: 560px) {
+  .site-header { padding: 0 10px; gap: 6px; }
+  .brand img { width: 38px; height: 42px; }
+  .brand span { font-size: 12px; }
+  .brand small { font-size: 6.5px; letter-spacing: .05em; }
+  .header-actions .btn-lang { display: inline-flex !important; padding: 8px; }
+  .header-actions .btn-lang .lang-label { display: none; }
+  .header-actions .btn-primary { max-width: none; font-size: 11px; padding: 8px 9px; }
+  .menu-toggle { width: 38px; height: 38px; }
+}
+
+/* ===== Hero logo: transparent, spins then stops ===== */
+.hero-logo { background: none !important; box-shadow: none !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; overflow: visible; animation: logoSpinStop 9s cubic-bezier(.22,.8,.3,1) infinite; }
+.hero-logo img { background: transparent; filter: drop-shadow(0 14px 22px rgba(20,60,40,.28)); }
+@keyframes logoSpinStop {
+  0%   { transform: rotate(-720deg) scale(.5); opacity: .15; }
+  16%  { transform: rotate(0deg) scale(1.05); opacity: 1; }
+  20%  { transform: rotate(0deg) scale(1); }
+  100% { transform: rotate(0deg) scale(1); opacity: 1; }
+}

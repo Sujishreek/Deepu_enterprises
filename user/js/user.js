@@ -13,7 +13,7 @@ const TX = {
  en: {
   nav_home: "Home", nav_sections: "Shop by Section", nav_catalog: "Catalog", nav_brands: "Brands",
   nav_about: "About", nav_logistics: "Logistics", nav_dealer: "Become a Dealer", nav_contact: "Contact",
-  nav_track_order: "Track Order", my_inquiry: "🛒 Cart & Order",
+  nav_track_order: "Track Order", my_inquiry: "Cart & Order",
   hero_eyebrow: "YOUR TRUSTED ELECTRICAL & ELECTRONICS PARTNER",
   hero_title: "Powering businesses.<br><em>Strengthening</em> relationships.",
   hero_text: "Bulbs, wires, switches, MCBs, fans, lighting and more — wholesale and retail supply from one dependable counter.",
@@ -190,6 +190,36 @@ const tr = k => (TX[LANG] && TX[LANG][k]) || TX.en[k] || k;
 /* ---------- Helpers & State ---------- */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function productImageSrc(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const candidate = raw.startsWith("//") ? "https:" + raw : (/^https?:\/\//i.test(raw) ? raw : "https://" + raw);
+    const url = new URL(candidate);
+    if (!/^https?:$/.test(url.protocol)) return "";
+    const host = url.hostname.toLowerCase();
+    if ((host === "google.com" || host === "www.google.com") && url.pathname === "/imgres") {
+      const target = url.searchParams.get("imgurl");
+      if (target) return productImageSrc(target);
+    }
+    if ((host === "google.com" || host === "www.google.com") && url.pathname === "/url") {
+      const target = url.searchParams.get("url") || url.searchParams.get("q");
+      if (target && /^https?:\/\//i.test(target)) return productImageSrc(target);
+    }
+    if (host === "drive.google.com" || host.endsWith(".drive.google.com") || host === "docs.google.com") {
+      const match = url.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.pathname.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      const id = (match && match[1]) || url.searchParams.get("id");
+      if (id) return "https://drive.google.com/uc?export=view&id=" + encodeURIComponent(id);
+    }
+    return url.href;
+  } catch (_) { return ""; }
+}
+
+function productImageMarkup(value, alt = "Product image", className = "") {
+  const src = productImageSrc(value);
+  if (!src) return `<span class="product-image-fallback ${className}" role="img" aria-label="No product image">DE</span>`;
+  return `<img class="${className}" src="${esc(src)}" alt="${esc(alt)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'product-image-fallback ${className}',textContent:'DE'}))">`;
+}
 const inr = n => "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 });
 const LOCATIONS = ["Channarayapatna", "Hassan City", "Holenarasipura", "Arsikere", "Belur", "Sakleshpur", "Arkalgud", "Alur"];
 
@@ -241,7 +271,9 @@ function notify(msg) {
 function persistCart() {
   try { localStorage.setItem("deepu_cart", JSON.stringify(cart)); } catch (e) {}
   const countEl = $("#cartCount");
-  if (countEl) countEl.textContent = cart.reduce((n, x) => n + x.qty, 0);
+  const n = cart.reduce((a, x) => a + x.qty, 0);
+  if (countEl) countEl.textContent = n > 0 ? n : "";
+  const eb = $(".btn-enquiry"); if (eb) eb.classList.toggle("on", n > 0);
 }
 
 /* ---------- Static text & shop details ---------- */
@@ -251,7 +283,7 @@ function applyStatic() {
   $$("[data-i18n-html]").forEach(el => { el.innerHTML = tr(el.dataset.i18nHtml); });
   $$("[data-i18n-ph]").forEach(el => { el.placeholder = tr(el.dataset.i18nPh); });
   const langBtn = $("#langToggle");
-  if (langBtn) langBtn.textContent = LANG === "en" ? "🌐 ಕನ್ನಡ" : "🌐 English";
+  const langLbl = $("#langToggle .lang-label"); if (langLbl) langLbl.textContent = LANG === "en" ? "ಕನ್ನಡ" : "English";
 
   const s = shop();
   const set = (k, v) => $$(`[data-shop="${k}"]`).forEach(el => { el.textContent = v; });
@@ -320,7 +352,7 @@ function filteredProducts() {
 function productCard(p) {
   const st = stockState(p);
   const initials = esc(p.name.split(" ").slice(0, 2).map(x => x[0]).join(""));
-  const img = p.image_url ? `<img src="${esc(p.image_url)}" alt="" loading="lazy" onerror="this.remove()">` : "";
+  const img = productImageMarkup(p.image_url, pName(p), "catalog-product-image");
   const stockQty = Number(p.stock_quantity || 0);
   const stockText = stockQty > 0 ? `${st.label} (${stockQty})` : st.label;
 
@@ -392,7 +424,7 @@ function heroSuggest() {
   const q = $("#heroSearch").value, box = $("#heroSuggest");
   if (!q.trim()) { box.classList.remove("open"); return; }
   const res = SearchEngine.search(activeProducts(), q, 6);
-  box.innerHTML = res.map(p => `<button data-pick="${esc(p.product_id)}">${p.image_url ? `<img src="${esc(p.image_url)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'thumb-fallback',textContent:'DE'}))">` : `<span class="thumb-fallback">DE</span>`}<span><b>${esc(pName(p))}</b><small>${esc(p.brand_name || "")} · ${esc(p.sku || "")}</small></span><span class="price">${inr(p.selling_price)}</span></button>`).join("") || `<div style="padding:14px;font-size:12px;color:var(--muted)">${tr("no_products")}</div>`;
+  box.innerHTML = res.map(p => `<button data-pick="${esc(p.product_id)}">${productImageMarkup(p.image_url, pName(p), "suggestion-product-image")}<span><b>${esc(pName(p))}</b><small>${esc(p.brand_name || "")} · ${esc(p.sku || "")}</small></span><span class="price">${inr(p.selling_price)}</span></button>`).join("") || `<div style="padding:14px;font-size:12px;color:var(--muted)">${tr("no_products")}</div>`;
   box.classList.add("open");
 }
 
