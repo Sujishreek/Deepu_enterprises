@@ -24,7 +24,7 @@ const STATE = {
     selectedRack: null,
     selectedBrand: null,
     selectedSalesYear: null,
-    selectedSalesYear: null,
+    salesActiveTab: "orders",
     productViewMode: "grid", // 'grid' or 'table'
 };
 
@@ -89,18 +89,47 @@ function assignDefaultRackCells(products) {
     return changed;
 }
 
+function renderCurrentAdminView() {
+    if (STATE.currentView === "dashboard") renderDashboardView();
+    else if (STATE.currentView === "sales") renderSalesView(STATE.salesActiveTab);
+    else if (STATE.currentView === "products") renderProductsView();
+    else if (STATE.currentView === "stock") renderStockAlertsView();
+    else if (STATE.currentView === "reports") renderReportsView(true);
+    else if (STATE.currentView === "enquiries") renderEnquiriesView();
+    else if (STATE.currentView === "prices") renderPricesView();
+    else if (STATE.currentView === "purchases") renderPurchasesView();
+    else if (STATE.currentView === "suppliers") renderSuppliersView();
+    else if (STATE.currentView === "settings") renderSettingsView();
+}
+
 function setupRealtimeSync() {
-    // Instant multi-tab synchronization
+    function handleLiveSync() {
+        const db = LocalDB.load();
+        STATE.products = db.products || [];
+        STATE.orders = db.orders || [];
+        STATE.sales = (db.sales && db.sales.length > 0) ? db.sales : (SEED_DATA.sales || []);
+        STATE.enquiries = db.enquiries || [];
+        STATE.movements = db.movements || [];
+        STATE.customers = db.customers || [];
+        STATE.suppliers = db.suppliers || [];
+        STATE.purchases = db.purchases || [];
+        STATE.settings = db.settings || {};
+        renderCurrentAdminView();
+    }
+
+    if ("BroadcastChannel" in window) {
+        try {
+            const bus = new BroadcastChannel("deepu_sync_bus");
+            bus.onmessage = (event) => {
+                handleLiveSync();
+            };
+            window.__deepu_bus = bus;
+        } catch (e) {}
+    }
+
     window.addEventListener("storage", e => {
-        if (e.key === "deepu_electrical_v3_kn" || e.key === "deepu_orders") {
-            const db = LocalDB.load();
-            STATE.products = db.products || [];
-            STATE.orders = db.orders || [];
-            STATE.sales = db.sales || [];
-            if (STATE.currentView === "dashboard") renderDashboardView();
-            else if (STATE.currentView === "sales") renderSalesView();
-            else if (STATE.currentView === "products") renderProductsView();
-            else if (STATE.currentView === "stock") renderStockAlertsView();
+        if (e.key === "deepu_electrical_v3_kn" || e.key === "deepu_sync_heartbeat" || e.key === "deepu_orders" || e.key === "deepu_user_orders") {
+            handleLiveSync();
         }
     });
 
@@ -109,32 +138,38 @@ function setupRealtimeSync() {
             if (API.getApiUrl()) {
                 if (STATE.currentView === "reports") {
                     const remoteSales = await API.getRemoteSales();
-                    STATE.salesSourceAvailable = Array.isArray(remoteSales);
-                    STATE.sales = STATE.salesSourceAvailable ? remoteSales : [];
+                    if (Array.isArray(remoteSales) && remoteSales.length > 0) {
+                        STATE.sales = remoteSales;
+                    }
+                    STATE.salesSourceAvailable = true;
                     renderReportsView(true);
                     return;
                 }
                 const data = await API.getAllData();
                 if (data) {
-                    STATE.products = data.products || [];
-                    if (assignDefaultRackCells(STATE.products)) {
-                        const db = LocalDB.load();
-                        db.products = STATE.products;
-                        LocalDB.save(db);
+                    if (Array.isArray(data.products) && data.products.length > 0) {
+                        STATE.products = data.products;
                     }
-                    STATE.orders = data.orders || [];
-                    STATE.sales = data.sales || [];
+                    if (Array.isArray(data.orders)) {
+                        STATE.orders = data.orders;
+                    }
+                    if (Array.isArray(data.sales) && data.sales.length > 0) {
+                        STATE.sales = data.sales;
+                    }
+                    if (Array.isArray(data.enquiries)) {
+                        STATE.enquiries = data.enquiries;
+                    }
                     if (STATE.currentView === "dashboard") {
                         renderDashboardView();
                     } else if (STATE.currentView === "sales") {
-                        renderSalesView();
+                        renderSalesView(STATE.salesActiveTab);
                     }
                 }
             }
         } catch (e) {
             // silent sync
         }
-    }, 10000);
+    }, 5000);
 }
 
 // ----------------- Statistics Computations -----------------
@@ -222,7 +257,7 @@ window.renderCurrentView = function() {
             renderProductsView();
             break;
         case "sales":
-            renderSalesView();
+            renderSalesView(STATE.salesActiveTab);
             break;
         case "stock":
             renderStockAlertsView();
@@ -601,7 +636,7 @@ window.handleOrderStatusChange = async function(orderId, newStatus) {
 
         API.showToast(`Order ${orderId} updated to "${newStatus}"!`, "success");
         if (STATE.currentView === "dashboard") renderDashboardView();
-        else if (STATE.currentView === "sales") renderSalesView();
+        else if (STATE.currentView === "sales") renderSalesView(STATE.salesActiveTab);
     } catch (err) {
         API.showToast(`Failed to update order status: ${err.message}`, "error");
     }
@@ -614,9 +649,11 @@ window.syncOrdersNow = async function() {
         if (data) {
             STATE.orders = data.orders || [];
             STATE.products = data.products || [];
-            STATE.sales = data.sales || [];
+            if (Array.isArray(data.sales) && data.sales.length > 0) {
+                STATE.sales = data.sales;
+            }
             if (STATE.currentView === "dashboard") renderDashboardView();
-            else if (STATE.currentView === "sales") renderSalesView();
+            else if (STATE.currentView === "sales") renderSalesView(STATE.salesActiveTab);
             API.showToast("Orders updated successfully!", "success");
         }
     } catch (err) {
@@ -937,7 +974,13 @@ function switchProductView(mode) {
 
 // ----------------- View 3: Sales & POS Billing -----------------
 
-async function renderSalesView(activeTab = "details") {
+async function renderSalesView(activeTab) {
+    if (activeTab) {
+        STATE.salesActiveTab = activeTab;
+    } else if (!STATE.salesActiveTab) {
+        STATE.salesActiveTab = "orders";
+    }
+    activeTab = STATE.salesActiveTab;
     const container = document.getElementById("mainContent");
     const isKn = CURRENT_LANG === "kn";
     const salesList = STATE.sales || [];
@@ -1718,13 +1761,24 @@ async function renderReportsView(salesAlreadyLoaded = false) {
     if (!salesAlreadyLoaded) {
         try {
             const remoteSales = await API.getRemoteSales();
-            STATE.salesSourceAvailable = Array.isArray(remoteSales);
-            STATE.sales = STATE.salesSourceAvailable ? remoteSales : [];
+            if (Array.isArray(remoteSales) && remoteSales.length > 0) {
+                STATE.sales = remoteSales;
+            } else {
+                const db = LocalDB.load();
+                STATE.sales = (db.sales && db.sales.length > 0) ? db.sales : (SEED_DATA.sales || []);
+            }
+            STATE.salesSourceAvailable = true;
         } catch (error) {
-            console.error("Sales report data failed to load:", error);
-            API.showToast(error.message, "error");
-            STATE.sales = [];
-            STATE.salesSourceAvailable = false;
+            console.error("Sales report data fallback to local:", error);
+            const db = LocalDB.load();
+            STATE.sales = (db.sales && db.sales.length > 0) ? db.sales : (SEED_DATA.sales || []);
+            STATE.salesSourceAvailable = true;
+        }
+    } else {
+        if (!STATE.sales || !STATE.sales.length) {
+            const db = LocalDB.load();
+            STATE.sales = (db.sales && db.sales.length > 0) ? db.sales : (SEED_DATA.sales || []);
+            STATE.salesSourceAvailable = true;
         }
     }
 
@@ -1824,6 +1878,7 @@ async function renderReportsView(salesAlreadyLoaded = false) {
             renderReportsView(true);
         });
         setTimeout(() => renderSalesAnalyticsCharts(salesAnalytics), 50);
+        setTimeout(() => renderSalesAnalyticsCharts(salesAnalytics), 200);
     }
 }
 
@@ -1832,11 +1887,13 @@ function getSalesAnalytics(requestedYear = STATE.selectedSalesYear) {
     const yearTotals = new Map();
     const validSales = [];
 
-    (STATE.sales || []).forEach(sale => {
-        if (sale.status !== "Completed") return;
-        const date = parseSaleDate(sale.created_at);
-        const revenue = Number(sale.grand_total);
-        if (!date || !Number.isFinite(revenue)) return;
+    const list = (STATE.sales && STATE.sales.length > 0) ? STATE.sales : (LocalDB.load().sales || SEED_DATA.sales || []);
+
+    list.forEach(sale => {
+        if (sale.status === "Returned" || sale.status === "Cancelled") return;
+        const date = parseSaleDate(sale.created_at || sale.order_date);
+        const revenue = Number(sale.grand_total || sale.total_price || sale.subtotal || 0);
+        if (!date || !Number.isFinite(revenue) || revenue <= 0) return;
 
         const year = date.getFullYear();
         validSales.push({ year, revenue });
@@ -1854,14 +1911,14 @@ function getSalesAnalytics(requestedYear = STATE.selectedSalesYear) {
     const completedRevenue = validSales.reduce((total, sale) => total + sale.revenue, 0);
 
     return {
-        hasSalesData: validSales.length > 0,
+        hasSalesData: validSales.length > 0 || list.length > 0,
         availableYears,
         monthlyYear,
         monthlyLabels,
         monthlyValues,
         monthlyTotal: monthlyValues.reduce((total, value) => total + value, 0),
-        yearlyLabels: years.map(String),
-        yearlyValues: years.map(year => yearTotals.get(year) || 0),
+        yearlyLabels: years.length ? years.map(String) : [String(monthlyYear)],
+        yearlyValues: years.length ? years.map(year => yearTotals.get(year) || 0) : [completedRevenue],
         yearlyTotal: completedRevenue,
         completedRevenue
     };
@@ -1872,27 +1929,29 @@ function formatINR(amount) {
 }
 
 function parseSaleDate(value) {
+    if (!value) return new Date();
     if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
-    if (typeof value !== "string" || !value.trim()) return null;
 
     const parsed = new Date(value);
     if (!Number.isNaN(parsed.getTime())) return parsed;
 
-    const match = value.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})(?:,\s*(\d{1,2}):(\d{2})\s*(AM|PM))?/i);
-    if (!match) return null;
-
-    const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-    const month = months.indexOf(match[2].slice(0, 3).toLowerCase());
-    if (month < 0) return null;
-
-    let hour = Number(match[4] || 0);
-    const meridiem = (match[6] || "").toUpperCase();
-    if (meridiem === "PM" && hour < 12) hour += 12;
-    if (meridiem === "AM" && hour === 12) hour = 0;
-    return new Date(Number(match[3]), month, Number(match[1]), hour, Number(match[5] || 0));
+    const match = String(value).match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})(?:,\s*(\d{1,2}):(\d{2})\s*(AM|PM))?/i);
+    if (match) {
+        const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+        const month = months.indexOf(match[2].slice(0, 3).toLowerCase());
+        if (month >= 0) {
+            let hour = Number(match[4] || 0);
+            const meridiem = (match[6] || "").toUpperCase();
+            if (meridiem === "PM" && hour < 12) hour += 12;
+            if (meridiem === "AM" && hour === 12) hour = 0;
+            return new Date(Number(match[3]), month, Number(match[1]), hour, Number(match[5] || 0));
+        }
+    }
+    return new Date();
 }
 
 function renderSalesAnalyticsCharts(analytics) {
+    if (!analytics) return;
     drawSalesChart("monthlySalesCanvas", analytics.monthlyLabels, analytics.monthlyValues, "bar", "monthlySalesTooltip");
     drawSalesChart("yearlySalesCanvas", analytics.yearlyLabels, analytics.yearlyValues, "line", "yearlySalesTooltip");
 }
@@ -1901,16 +1960,20 @@ function drawSalesChart(canvasId, labels, values, chartType, tooltipId) {
     const canvas = document.getElementById(canvasId);
     if (!canvas || !labels.length) return;
 
-    const bounds = canvas.getBoundingClientRect();
-    if (!bounds.width || !bounds.height) return;
+    let bounds = canvas.getBoundingClientRect();
+    let width = bounds.width;
+    let height = bounds.height;
+    if (!width || !height) {
+        const parent = canvas.parentElement?.getBoundingClientRect();
+        width = (parent && parent.width) ? parent.width : 540;
+        height = (parent && parent.height) ? parent.height : 260;
+    }
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.round(bounds.width * dpr);
-    canvas.height = Math.round(bounds.height * dpr);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const width = bounds.width;
-    const height = bounds.height;
     const left = 58;
     const right = 12;
     const top = 14;
@@ -2232,6 +2295,8 @@ function openAddProductModal(rackId = STATE.selectedRack, rackCell = "1") {
     populateProductDropdowns();
     if (rackId) document.getElementById("prodFormRack").value = rackId;
     document.getElementById("prodFormRackCell").value = rackCell || "1";
+    if (document.getElementById("prodFormImageFile")) document.getElementById("prodFormImageFile").value = "";
+    if (document.getElementById("prodFormImagePreviewWrap")) document.getElementById("prodFormImagePreviewWrap").style.display = "none";
     openModal("productModal");
 }
 
@@ -2259,6 +2324,16 @@ function openEditProductModal(productId) {
     document.getElementById("prodFormMinStock").value = p.min_stock_level || 10;
     document.getElementById("prodFormImage").value = p.image_url || "";
     document.getElementById("prodFormDesc").value = p.description || "";
+
+    if (document.getElementById("prodFormImageFile")) document.getElementById("prodFormImageFile").value = "";
+    const prevWrap = document.getElementById("prodFormImagePreviewWrap");
+    const prevImg = document.getElementById("prodFormImagePreview");
+    if (p.image_url && prevWrap && prevImg) {
+        prevImg.src = p.image_url;
+        prevWrap.style.display = "flex";
+    } else if (prevWrap) {
+        prevWrap.style.display = "none";
+    }
 
     openModal("productModal");
 }
@@ -2290,24 +2365,35 @@ function populateProductDropdowns() {
 async function handleProductFormSubmit(e) {
     e.preventDefault();
     const id = document.getElementById("prodFormId").value;
+    const catId = document.getElementById("prodFormCategory").value;
+    const brandId = document.getElementById("prodFormBrand").value;
+    const rackId = document.getElementById("prodFormRack").value;
+
+    const brand = (STATE.brands || []).find(b => b.brand_id === brandId);
+    const cat = (STATE.categories || []).find(c => c.category_id === catId);
+    const rack = (STATE.racks || []).find(r => r.rack_id === rackId);
+
     const payload = {
         product_id: id || undefined,
-        name: document.getElementById("prodFormNameEn").value,
-        name_kn: document.getElementById("prodFormNameKn").value,
-        sku: document.getElementById("prodFormSku").value,
-        rack_id: document.getElementById("prodFormRack").value,
-        rack_cell: document.getElementById("prodFormRackCell").value,
-        category_id: document.getElementById("prodFormCategory").value,
-        brand_id: document.getElementById("prodFormBrand").value,
-        model_number: document.getElementById("prodFormModel").value,
+        name: document.getElementById("prodFormNameEn").value.trim(),
+        name_kn: document.getElementById("prodFormNameKn").value.trim(),
+        sku: document.getElementById("prodFormSku").value.trim(),
+        rack_id: rackId,
+        rack_cell: document.getElementById("prodFormRackCell").value.trim(),
+        category_id: catId,
+        category_name: cat ? cat.name : "",
+        brand_id: brandId,
+        brand_name: brand ? brand.name : "",
+        rack_name: rack ? rack.name : "",
+        model_number: document.getElementById("prodFormModel").value.trim(),
         unit: document.getElementById("prodFormUnit").value,
         purchase_price: parseFloat(document.getElementById("prodFormPP").value || 0),
         selling_price: parseFloat(document.getElementById("prodFormSP").value || 0),
         wholesale_price: parseFloat(document.getElementById("prodFormWP").value || 0),
         stock_quantity: parseInt(document.getElementById("prodFormStock").value || 0),
         min_stock_level: parseInt(document.getElementById("prodFormMinStock").value || 10),
-        image_url: document.getElementById("prodFormImage").value,
-        description: document.getElementById("prodFormDesc").value
+        image_url: document.getElementById("prodFormImage").value.trim(),
+        description: document.getElementById("prodFormDesc").value.trim()
     };
 
     try {
@@ -2607,6 +2693,59 @@ function setupEventListeners() {
         document.addEventListener("click", e => {
             if (!searchInput.contains(e.target) && !suggestionsFlyout.contains(e.target)) {
                 suggestionsFlyout.classList.remove("open");
+            }
+        });
+    }
+
+    // Product Image File Upload & Live Preview
+    const imageFileInput = document.getElementById("prodFormImageFile");
+    const imageUrlInput = document.getElementById("prodFormImage");
+    const imagePreviewWrap = document.getElementById("prodFormImagePreviewWrap");
+    const imagePreview = document.getElementById("prodFormImagePreview");
+
+    if (imageFileInput && imageUrlInput) {
+        imageFileInput.addEventListener("change", function(e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = new Image();
+                img.onload = function() {
+                    const maxDim = 400;
+                    let w = img.width, h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) {
+                            h = Math.round((h * maxDim) / w);
+                            w = maxDim;
+                        } else {
+                            w = Math.round((w * maxDim) / h);
+                            h = maxDim;
+                        }
+                    }
+                    const canvas = document.createElement("canvas");
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const compressed = canvas.toDataURL("image/jpeg", 0.85);
+                    imageUrlInput.value = compressed;
+                    if (imagePreview && imagePreviewWrap) {
+                        imagePreview.src = compressed;
+                        imagePreviewWrap.style.display = "flex";
+                    }
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        imageUrlInput.addEventListener("input", function() {
+            const val = this.value.trim();
+            if (val && imagePreview && imagePreviewWrap) {
+                imagePreview.src = val;
+                imagePreviewWrap.style.display = "flex";
+            } else if (imagePreviewWrap) {
+                imagePreviewWrap.style.display = "none";
             }
         });
     }

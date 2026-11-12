@@ -5,6 +5,18 @@
 
 const DEFAULT_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyugtl-Hl3U1Zmv_HjKlcTi2Homf5rheNQltW3VHGwrYJ7lKc03a_45HdJxvkgL25qEMw/exec";
 
+function broadcastDeepuSync(type, details = {}) {
+    try {
+        localStorage.setItem("deepu_sync_heartbeat", String(Date.now()));
+    } catch (e) {}
+    try {
+        if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+            if (!window.__deepu_bus) window.__deepu_bus = new BroadcastChannel("deepu_sync_bus");
+            window.__deepu_bus.postMessage({ type, details, timestamp: Date.now() });
+        }
+    } catch (e) {}
+}
+
 const API = {
     getApiUrl() {
         const db = LocalDB.load();
@@ -96,6 +108,7 @@ const API = {
             });
         }
         LocalDB.save(db);
+        broadcastDeepuSync("ORDER_CREATED", { order });
 
         // Sync with Google Sheets backend
         const remote = await this.callAppsScript("createOrder", { order });
@@ -115,6 +128,7 @@ const API = {
             if (s) s.status = newStatus;
         }
         LocalDB.save(db);
+        broadcastDeepuSync("ORDER_UPDATED", { order_id: orderId, status: newStatus });
 
         // Sync with Google Sheets backend
         const remote = await this.callAppsScript("updateOrderStatus", { order_id: orderId, status: newStatus });
@@ -128,6 +142,7 @@ const API = {
         const e = db.enquiries.find(x => x.enquiry_id === enquiryId);
         if (e) Object.assign(e, fields);
         LocalDB.save(db);
+        broadcastDeepuSync("ENQUIRY_UPDATED", { enquiry_id: enquiryId });
         const remote = await this.callAppsScript("updateEnquiry", { enquiry_id: enquiryId, fields });
         return { updated: !!e, remote: remote || null };
     },
@@ -136,17 +151,19 @@ const API = {
         const db = LocalDB.load();
         db.enquiries = (db.enquiries || []).filter(x => x.enquiry_id !== enquiryId);
         LocalDB.save(db);
+        broadcastDeepuSync("ENQUIRY_DELETED", { enquiry_id: enquiryId });
         return { deleted: true };
     },
 
     async getRemoteSales() {
         const remote = await this.callAppsScript("getAllData");
-        if (!remote || !Array.isArray(remote.sales)) return null;
-
         const db = LocalDB.load();
-        db.sales = remote.sales;
-        LocalDB.save(db);
-        return remote.sales;
+        if (remote && Array.isArray(remote.sales) && remote.sales.length > 0) {
+            db.sales = remote.sales;
+            LocalDB.save(db);
+            return remote.sales;
+        }
+        return (db.sales && db.sales.length > 0) ? db.sales : (SEED_DATA.sales || []);
     },
 
     // 2. Products CRUD
@@ -187,6 +204,7 @@ const API = {
             }
         }
         LocalDB.save(db);
+        broadcastDeepuSync("INVENTORY_UPDATED", { product });
 
         // Remote push
         this.callAppsScript("saveProduct", { product });
@@ -200,6 +218,7 @@ const API = {
 
         Object.assign(product, prices);
         LocalDB.save(db);
+        broadcastDeepuSync("INVENTORY_UPDATED", { productId, prices });
         await this.callAppsScript("updatePrices", { product_id: productId, prices });
         return product;
     },
@@ -209,6 +228,7 @@ const API = {
         const p = db.products.find(x => x.product_id === productId);
         if (p) p.is_active = 0;
         LocalDB.save(db);
+        broadcastDeepuSync("INVENTORY_UPDATED", { productId });
 
         this.callAppsScript("deleteProduct", { product_id: productId });
         return { deleted: true };
@@ -237,6 +257,7 @@ const API = {
             created_at: new Date().toLocaleString()
         });
         LocalDB.save(db);
+        broadcastDeepuSync("INVENTORY_UPDATED", { productId, delta, newStock });
 
         this.callAppsScript("adjustStock", {
             product_id: productId,
@@ -322,6 +343,7 @@ const API = {
 
         db.sales.unshift(rec);
         LocalDB.save(db);
+        broadcastDeepuSync("SALE_CREATED", { sale: rec });
 
         this.callAppsScript("createSale", { sale: rec });
         return rec;

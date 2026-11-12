@@ -156,6 +156,19 @@ const LocalDB = {
                 if (parsed) {
                     parsed.orders = parsed.orders || [];
                     if (!parsed.orders.length && SEED_DATA.orders) parsed.orders = structuredClone(SEED_DATA.orders);
+                    parsed.products = parsed.products || [];
+                    if (!parsed.products.length && SEED_DATA.products) parsed.products = structuredClone(SEED_DATA.products);
+                    parsed.sales = parsed.sales || [];
+                    if (!parsed.sales.length && SEED_DATA.sales) parsed.sales = structuredClone(SEED_DATA.sales);
+                    parsed.categories = (parsed.categories && parsed.categories.length) ? parsed.categories : structuredClone(SEED_DATA.categories);
+                    parsed.racks = (parsed.racks && parsed.racks.length) ? parsed.racks : structuredClone(SEED_DATA.racks);
+                    parsed.brands = (parsed.brands && parsed.brands.length) ? parsed.brands : structuredClone(SEED_DATA.brands);
+                    parsed.suppliers = (parsed.suppliers && parsed.suppliers.length) ? parsed.suppliers : structuredClone(SEED_DATA.suppliers);
+                    parsed.customers = (parsed.customers && parsed.customers.length) ? parsed.customers : structuredClone(SEED_DATA.customers);
+                    parsed.movements = (parsed.movements && parsed.movements.length) ? parsed.movements : structuredClone(SEED_DATA.movements);
+                    parsed.purchases = (parsed.purchases && parsed.purchases.length) ? parsed.purchases : structuredClone(SEED_DATA.purchases);
+                    parsed.enquiries = parsed.enquiries || [];
+                    parsed.settings = parsed.settings || structuredClone(SEED_DATA.settings);
                     return parsed;
                 }
             }
@@ -167,8 +180,15 @@ const LocalDB = {
     save(data) {
         try {
             localStorage.setItem(LOCAL_DB_KEY, JSON.stringify(data));
+            localStorage.setItem("deepu_sync_heartbeat", String(Date.now()));
         } catch (e) {
             console.error("Storage save failed:", e);
         }
+        try {
+            if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+                if (!window.__deepu_bus) window.__deepu_bus = new BroadcastChannel("deepu_sync_bus");
+                window.__deepu_bus.postMessage({ type: "SYNC", timestamp: Date.now() });
+            }
+        } catch (e) {}
     }
 };

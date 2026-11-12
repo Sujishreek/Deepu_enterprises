@@ -193,10 +193,13 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 function productImageSrc(value) {
   const raw = String(value || "").trim();
   if (!raw) return "";
+  if (raw.startsWith("data:image/") || raw.startsWith("blob:") || raw.startsWith("assets/") || raw.startsWith("./") || raw.startsWith("/") || raw.startsWith("../")) {
+    return raw;
+  }
   try {
     const candidate = raw.startsWith("//") ? "https:" + raw : (/^https?:\/\//i.test(raw) ? raw : "https://" + raw);
     const url = new URL(candidate);
-    if (!/^https?:$/.test(url.protocol)) return "";
+    if (!/^https?:$/.test(url.protocol)) return raw;
     const host = url.hostname.toLowerCase();
     if ((host === "google.com" || host === "www.google.com") && url.pathname === "/imgres") {
       const target = url.searchParams.get("imgurl");
@@ -212,7 +215,7 @@ function productImageSrc(value) {
       if (id) return "https://drive.google.com/uc?export=view&id=" + encodeURIComponent(id);
     }
     return url.href;
-  } catch (_) { return ""; }
+  } catch (_) { return raw; }
 }
 
 function productImageMarkup(value, alt = "Product image", className = "") {
@@ -674,16 +677,62 @@ async function submitPurchase(ev) {
   currentDb.orders = currentDb.orders || [];
   currentDb.orders.unshift(newOrder);
 
-  // Decrement product stock in local store
+  // Create corresponding sale record so Admin Dashboard Transactions & Reports update immediately
+  const newSale = {
+    sale_id: orderId,
+    invoice_no: orderId,
+    customer_name: f.name.trim(),
+    customer_phone: phone,
+    subtotal: grandTotal,
+    discount_amount: 0,
+    tax_amount: 0,
+    grand_total: grandTotal,
+    paid_amount: grandTotal,
+    balance_amount: 0,
+    payment_mode: "Online / Cash on Delivery",
+    status: "Completed",
+    items: itemsList,
+    items_count: itemsList.length,
+    total_quantity: totalUnits,
+    created_at: new Date().toISOString(),
+    shop_info: currentDb.settings
+  };
+  currentDb.sales = currentDb.sales || [];
+  currentDb.sales.unshift(newSale);
+
+  currentDb.movements = currentDb.movements || [];
+
+  // Decrement product stock in local store and record movements
   itemsList.forEach(item => {
     const p = (currentDb.products || []).find(x => x.product_id === item.product_id);
     if (p) {
-      p.stock_quantity = Math.max(0, Number(p.stock_quantity || 0) - Number(item.quantity || 0));
+      const prev = Number(p.stock_quantity || 0);
+      p.stock_quantity = Math.max(0, prev - Number(item.quantity || 0));
+      currentDb.movements.unshift({
+        movement_id: "MOV-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+        product_name: item.name,
+        sku: item.sku || "",
+        movement_type: "Sale",
+        quantity: -item.quantity,
+        previous_stock: prev,
+        new_stock: p.stock_quantity,
+        reference_id: orderId,
+        reason: `Online order from ${f.name.trim()}`,
+        performed_by: "Customer Web Order",
+        created_at: new Date().toLocaleString()
+      });
     }
   });
 
   LocalDB.save(currentDb);
   db = currentDb;
+
+  try {
+    localStorage.setItem("deepu_sync_heartbeat", String(Date.now()));
+    if (window.__deepu_bus) {
+      window.__deepu_bus.postMessage({ type: "USER_ACTIVITY", action: "order", order: newOrder, sale: newSale });
+    }
+  } catch (e) {}
 
   // 2. Remember customer's last order ID for easy tracking
   try {
@@ -972,6 +1021,13 @@ async function saveEnquiry(e) {
   d.enquiries.unshift(e);
   LocalDB.save(d);
 
+  try {
+    localStorage.setItem("deepu_sync_heartbeat", String(Date.now()));
+    if (window.__deepu_bus) {
+      window.__deepu_bus.postMessage({ type: "USER_ACTIVITY", action: "enquiry", enquiry: e });
+    }
+  } catch (_) {}
+
   const url = getAppsScriptUrl();
   if (url) {
     try {
@@ -1210,17 +1266,32 @@ function bindEvents() {
     });
   }
 
+  function handleUserLiveSync() {
+    reload();
+    applyStatic();
+    renderAll();
+  }
+
+  // Real-time broadcast channel across tabs
+  if ("BroadcastChannel" in window) {
+    try {
+      const bus = new BroadcastChannel("deepu_sync_bus");
+      bus.onmessage = () => {
+        handleUserLiveSync();
+      };
+      window.__deepu_bus = bus;
+    } catch (_) {}
+  }
+
   // Cross-tab immediate synchronization (When Admin updates products/orders or status in another tab)
   window.addEventListener("storage", e => {
-    if (e.key === "deepu_electrical_v3_kn" || e.key === "deepu_user_orders") {
-      reload();
-      applyStatic();
-      renderAll();
+    if (e.key === "deepu_electrical_v3_kn" || e.key === "deepu_sync_heartbeat" || e.key === "deepu_user_orders" || e.key === "deepu_orders") {
+      handleUserLiveSync();
     }
   });
 
-  // Background catalog polling every 15s and on window focus
-  setInterval(syncRemoteCatalog, 15000);
+  // Background catalog polling every 5s and on window focus
+  setInterval(syncRemoteCatalog, 5000);
   window.addEventListener("focus", syncRemoteCatalog);
 
   if (location.hash === "#admin-login") {
