@@ -957,7 +957,7 @@ async function fetchRemoteOrderStatus(query) {
       body: JSON.stringify({ action: "getOrderStatus", order_id: query })
     });
     const json = await res.json();
-    if (json && json.status === "success" && json.data) {
+    if (json && (json.ok || json.status === "success") && json.data) {
       // Sync into local DB
       const currentDb = LocalDB.load();
       currentDb.orders = currentDb.orders || [];
@@ -1132,25 +1132,33 @@ async function syncRemoteCatalog() {
       body: JSON.stringify({ action: "getPublicCatalog" })
     });
     const json = await res.json();
-    if (json && json.status === "success" && json.data) {
+    if (json && (json.ok || json.status === "success") && json.data) {
       const remote = json.data;
       const current = LocalDB.load();
       let changed = false;
       if (Array.isArray(remote.products) && remote.products.length) {
-        current.products = remote.products;
-        changed = true;
+        if (JSON.stringify(current.products) !== JSON.stringify(remote.products)) {
+          current.products = remote.products;
+          changed = true;
+        }
       }
       if (Array.isArray(remote.categories) && remote.categories.length) {
-        current.categories = remote.categories;
-        changed = true;
+        if (JSON.stringify(current.categories) !== JSON.stringify(remote.categories)) {
+          current.categories = remote.categories;
+          changed = true;
+        }
       }
       if (Array.isArray(remote.brands) && remote.brands.length) {
-        current.brands = remote.brands;
-        changed = true;
+        if (JSON.stringify(current.brands) !== JSON.stringify(remote.brands)) {
+          current.brands = remote.brands;
+          changed = true;
+        }
       }
       if (Array.isArray(remote.racks) && remote.racks.length) {
-        current.racks = remote.racks;
-        changed = true;
+        if (JSON.stringify(current.racks) !== JSON.stringify(remote.racks)) {
+          current.racks = remote.racks;
+          changed = true;
+        }
       }
       if (changed) {
         LocalDB.save(current);

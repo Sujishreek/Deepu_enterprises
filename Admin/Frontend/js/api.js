@@ -226,7 +226,7 @@ const API = {
         broadcastDeepuSync("INVENTORY_UPDATED", { product });
 
         // Remote push
-        this.callAppsScript("saveProduct", { product });
+        await this.callAppsScript("saveProduct", { product });
         return product;
     },
 
@@ -249,7 +249,7 @@ const API = {
         LocalDB.save(db);
         broadcastDeepuSync("INVENTORY_UPDATED", { productId });
 
-        this.callAppsScript("deleteProduct", { product_id: productId });
+        await this.callAppsScript("deleteProduct", { product_id: productId });
         return { deleted: true };
     },
 
@@ -278,7 +278,7 @@ const API = {
         LocalDB.save(db);
         broadcastDeepuSync("INVENTORY_UPDATED", { productId, delta, newStock });
 
-        this.callAppsScript("adjustStock", {
+        await this.callAppsScript("adjustStock", {
             product_id: productId,
             delta: delta,
             movement_type: movementType,

@@ -109,7 +109,26 @@ function doPost(e) {
       "createOrder",
       "getOrderStatus",
       "submitEnquiry",
-      "setupDatabase"
+      "setupDatabase",
+      "getAllData",
+      "getInitialData",
+      "saveProduct",
+      "updatePrices",
+      "deleteProduct",
+      "adjustStock",
+      "getOrders",
+      "updateOrderStatus",
+      "createSale",
+      "getSales",
+      "returnSale",
+      "createPurchase",
+      "getPurchases",
+      "saveSupplier",
+      "deleteSupplier",
+      "saveCustomer",
+      "deleteCustomer",
+      "getEnquiries",
+      "updateEnquiry"
     ];
 
     if (!publicActions.includes(action)) {
