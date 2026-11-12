@@ -43,19 +43,22 @@ if (adminLoginForm) {
         const isAllowedPass = (!p || p === "Demo@12345" || p === "demo@12345" || p === "admin123" || p === "admin" || p === "deepu123" || p.length > 0);
 
         if (isAllowedUser && isAllowedPass) {
-            // Immediate successful authentication
-            sessionStorage.setItem("deepu_admin_token", "ADMIN_SESSION_" + Date.now());
+            let sessionToken = "ADMIN_SESSION_" + Date.now();
+            try {
+                // Fetch cloud session token with a 3s timeout for instant responsiveness
+                const loginPromise = API.callAppsScript("login", credentials);
+                const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 3000));
+                const remoteSession = await Promise.race([loginPromise, timeoutPromise]);
+                if (remoteSession && remoteSession.token) {
+                    sessionToken = remoteSession.token;
+                }
+            } catch (e) {
+                console.debug("Remote login fallback to local session:", e);
+            }
+
+            sessionStorage.setItem("deepu_admin_token", sessionToken);
             sessionStorage.setItem("deepu_demo_admin", "1");
             sessionStorage.setItem("deepu_role", "Admin");
-
-            // Attempt background sync with Apps Script if available (non-blocking)
-            try {
-                API.callAppsScript("login", credentials).then(remoteSession => {
-                    if (remoteSession && remoteSession.token) {
-                        sessionStorage.setItem("deepu_admin_token", remoteSession.token);
-                    }
-                }).catch(e => console.debug("Remote login notice:", e));
-            } catch (_) {}
 
             if (adminLoginScreen) adminLoginScreen.hidden = true;
             if (adminLoadingScreen) adminLoadingScreen.remove();

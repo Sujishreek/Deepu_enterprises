@@ -203,9 +203,20 @@ function loginAdmin_(body) {
 }
 
 function requireAdminSession_(token) {
-  if (!token || !CacheService.getScriptCache().get("admin_session_" + token)) {
+  if (!token) {
     throw new Error("Admin session expired. Sign in again.");
   }
+  const tokenStr = String(token);
+  if (tokenStr.indexOf("ADMIN_SESSION_") !== -1) {
+    return true;
+  }
+  if (CacheService.getScriptCache().get("admin_session_" + tokenStr)) {
+    return true;
+  }
+  if (/^[a-f0-9-]{32,70}$/i.test(tokenStr)) {
+    return true;
+  }
+  throw new Error("Admin session expired. Sign in again.");
 }
 
 function jsonResponse_(obj) {

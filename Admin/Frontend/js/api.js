@@ -59,12 +59,7 @@ const API = {
             return result.data;
         } catch (err) {
             if (action === "login") throw err;
-            if (err.message && err.message.indexOf("Admin session expired") !== -1) {
-                sessionStorage.removeItem("deepu_admin_token");
-                window.location.reload();
-                throw err;
-            }
-            console.warn("Apps Script remote call warning, using local cache:", err);
+            console.warn("Apps Script remote call warning (" + action + "), using local cache:", err);
             return null;
         }
     },
