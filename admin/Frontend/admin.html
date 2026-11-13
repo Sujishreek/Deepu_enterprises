@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepu Enterprises — Electrical & Electronics Inventory Management System</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../../design-system.css">
+    <link rel="stylesheet" href="css/print-invoice.css">
+    <!-- Favicon / Logo -->
+    <link rel="icon" type="image/png" href="assets/images/deepu-logo.png">
+    <style>
+        body[data-admin-authenticated="false"] .app-container {
+            visibility: hidden;
+        }
+
+        .admin-loading-screen,
+        .admin-login-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background: radial-gradient(circle at 50% 35%, #fff 0, #f1f5fb 58%, #e8eef8 100%);
+        }
+
+        .admin-loading-screen {
+            flex-direction: column;
+            gap: 1.25rem;
+            color: #0b132b;
+            transition: opacity 0.35s ease, visibility 0.35s ease;
+        }
+
+        .admin-loading-screen.is-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .admin-loading-logo {
+            width: 112px;
+            height: 112px;
+            object-fit: contain;
+            border-radius: 50%;
+            animation: admin-logo-spin 2s linear infinite;
+            filter: drop-shadow(0 10px 18px rgba(11, 19, 43, 0.18));
+        }
+
+        .admin-loading-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .admin-loading-caption {
+            color: #64748b;
+            font-size: 0.92rem;
+        }
+
+        .admin-login-screen[hidden] {
+            display: none;
+        }
+
+        .admin-login-card {
+            width: min(100%, 420px);
+            padding: 2rem;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 20px;
+            background: #fff;
+            box-shadow: 0 24px 70px rgba(11, 19, 43, 0.18);
+        }
+
+        .admin-login-brand {
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-login-brand strong,
+        .admin-login-brand span {
+            display: block;
+        }
+
+        .admin-login-brand strong {
+            color: #0b132b;
+            font-size: 1.05rem;
+        }
+
+        .admin-login-brand span {
+            margin-top: 0.2rem;
+            color: #64748b;
+            font-size: 0.84rem;
+        }
+
+        .admin-login-card h1 {
+            margin-bottom: 0.4rem;
+            color: #0f172a;
+            font-size: 1.5rem;
+        }
+
+        .admin-login-description {
+            margin-bottom: 1.5rem;
+            color: #64748b;
+            font-size: 0.92rem;
+        }
+
+        .admin-login-field {
+            display: block;
+            margin-bottom: 1rem;
+            color: #334155;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .admin-login-field input {
+            display: block;
+            width: 100%;
+            min-height: 46px;
+            margin-top: 0.45rem;
+            padding: 0.7rem 0.8rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            background: #fff;
+            color: #0f172a;
+            font: inherit;
+        }
+
+        .admin-login-field input:focus {
+            border-color: #4f46e5;
+            outline: 3px solid rgba(79, 70, 229, 0.14);
+        }
+
+        .admin-login-error {
+            min-height: 1.3rem;
+            margin: 0.2rem 0 0.75rem;
+            color: #b91c1c;
+            font-size: 0.88rem;
+        }
+
+        .admin-login-submit {
+            width: 100%;
+            min-height: 46px;
+            border: 0;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            color: #fff;
+            cursor: pointer;
+            font: inherit;
+            font-weight: 700;
+        }
+
+        .admin-login-submit:disabled {
+            cursor: wait;
+            opacity: 0.7;
+        }
+
+        @keyframes admin-logo-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .admin-loading-logo {
+                animation-duration: 8s;
+            }
+
+            .admin-loading-screen {
+                transition-duration: 0.01ms;
+            }
+        }
+    </style>
+</head>
+<body data-admin-authenticated="false">
+
+    <div class="admin-loading-screen" id="adminLoadingScreen" role="status" aria-live="polite">
+        <img src="assets/images/deepu-logo.png" alt="Deepu Enterprises logo" class="admin-loading-logo">
+        <div class="admin-loading-title">Deepu Enterprises</div>
+        <div class="admin-loading-caption">Preparing your admin workspace</div>
+    </div>
+
+    <section class="admin-login-screen" id="adminLoginScreen" aria-labelledby="adminLoginTitle" hidden>
+        <div class="admin-login-card" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle">
+            <div class="admin-login-brand">
+                <strong>Deepu Enterprises</strong>
+                <span>Inventory Management</span>
+            </div>
+            <h1 id="adminLoginTitle">Admin Login</h1>
+            <p class="admin-login-description">Sign in with your administrator account to continue.</p>
+            <form id="adminLoginForm">
+                <label class="admin-login-field" for="adminUsername">
+                    Username
+                    <input id="adminUsername" name="username" type="text" autocomplete="username" required>
+                </label>
+                <label class="admin-login-field" for="adminPassword">
+                    Password
+                    <input id="adminPassword" name="password" type="password" autocomplete="current-password" required>
+                </label>
+                <p class="admin-login-error" id="adminLoginError" role="alert" aria-live="assertive"></p>
+                <button class="admin-login-submit" id="adminLoginSubmit" type="submit">Sign in</button>
+            </form>
+        </div>
+    </section>
+
+    <div class="app-container">
+        <!-- ==========================================================================
+             Left-Side Vertical Navigation Sidebar (Matches Screenshots)
+             ========================================================================== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="javascript:void(0)" class="brand-wrapper" onclick="navigateTo('dashboard')">
+                    <img src="assets/images/deepu-logo.png" alt="Deepu Enterprises Logo" class="brand-logo-img">
+                    <div class="brand-info">
+                        <span class="brand-title">Deepu Enterprises</span>
+                        <span class="brand-sub">Inventory System</span>
+                    </div>
+                </a>
+                <button class="btn-sidebar-toggle" id="sidebarToggle" title="Toggle Navigation Sidebar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <!-- 1. Dashboard -->
+                <button class="nav-item active" data-view="dashboard" onclick="navigateTo('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text" data-i18n="nav_dashboard">Admin Dashboard</span>
+                </button>
+
+                <!-- 2. Products Management -->
+                <button class="nav-item" data-view="products" onclick="navigateTo('products')">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-text" data-i18n="nav_products">Products Management</span>
+                </button>
+
+                <!-- 3. Stock Alerts -->
+                <button class="nav-item" data-view="stock" onclick="navigateTo('stock')">
+                    <span class="nav-icon">🔔</span>
+                    <span class="nav-text" data-i18n="nav_stock">Stock Alert</span>
+                </button>
+
+                <!-- 4. Purchases -->
+                <button class="nav-item" data-view="purchases" onclick="navigateTo('purchases')">
+                    <span class="nav-icon">🚚</span>
+                    <span class="nav-text" data-i18n="nav_purchases">Purchase</span>
+                </button>
+
+                <!-- 5. Sales & POS Billing -->
+                <button class="nav-item" data-view="sales" onclick="navigateTo('sales')">
+                    <span class="nav-icon">🧾</span>
+                    <span class="nav-text" data-i18n="nav_sales">Sales & POS</span>
+                </button>
+
+                <!-- 6. Suppliers -->
+                <button class="nav-item" data-view="suppliers" onclick="navigateTo('suppliers')">
+                    <span class="nav-icon">🏭</span>
+                    <span class="nav-text" data-i18n="nav_suppliers">Suppliers</span>
+                </button>
+
+                <!-- 7. Price Management -->
+                <button class="nav-item" data-view="prices" onclick="navigateTo('prices')">
+                    <span class="nav-icon">🏷️</span>
+                    <span class="nav-text" data-i18n="nav_prices">Price Management</span>
+                </button>
+
+                <!-- 8. Reports -->
+                <button class="nav-item" data-view="reports" onclick="navigateTo('reports')">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text" data-i18n="nav_reports">Reports & Analytics</span>
+                </button>
+
+                <!-- 9. Customer Enquiries (from user website) -->
+                <button class="nav-item" data-view="enquiries" onclick="navigateTo('enquiries')">
+                    <span class="nav-icon">📨</span>
+                    <span class="nav-text" data-i18n="nav_enquiries">Customer Enquiries</span>
+                </button>
+
+                <!-- 10. Settings -->
+                <button class="nav-item" data-view="settings" onclick="navigateTo('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text" data-i18n="nav_settings">Settings</span>
+                </button>
+            </nav>
+
+            <!-- Sidebar User Profile Footer -->
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="user-avatar-circle">D</div>
+                    <div class="sidebar-footer-info">
+                        <span class="user-name">Deepu R.</span>
+                        <span class="user-role-chip">Administrator</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <button id="sidebarBackdrop" class="sidebar-backdrop" type="button" aria-label="Close navigation"></button>
+
+        <!-- ==========================================================================
+             Main Workspace & Top Navigation Bar
+             ========================================================================== -->
+        <main class="main-wrapper">
+            <!-- Topbar (Matches Screenshots 1, 2, 3, 4) -->
+            <header class="topbar">
+                <button id="mobileMenuToggle" class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
+                <!-- Smart Multilingual & Tanglish Search -->
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="globalSearchInput" class="search-input" placeholder="Search product, SKU, invoice, customer, rack... (e.g. 'syska', 'vayar', 'ಬಲ್ಬ್')">
+                    </div>
+                    <!-- Autocomplete Suggestions Flyout -->
+                    <div id="searchSuggestions" class="search-suggestions-dropdown"></div>
+                </div>
+
+                <!-- Right Actions: Language Switch, Bell, User Profile -->
+                <div class="topbar-actions">
+                    <!-- Bilingual English / Kannada Language Switcher -->
+                    <button class="btn-lang-toggle" id="langToggleBtn" title="Switch language to English / Kannada">
+                        🌐 ಕನ್ನಡ
+                    </button>
+
+                    <!-- Notifications Bell with Low Stock Counter -->
+                    <button style="background: none; border: none; font-size: 1.25rem; cursor: pointer; position: relative;" onclick="navigateTo('stock')" title="Stock alerts">
+                        🔔
+                        <span style="position: absolute; top: -2px; right: -4px; width: 8px; height: 8px; background: #EF4444; border-radius: 50%;"></span>
+                    </button>
+
+                    <!-- User Pill -->
+                    <div class="user-profile-menu" id="userProfileMenu">
+                        <button class="user-dropdown-btn" id="userProfileButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="userProfileDropdown">
+                            <span class="user-avatar-circle topbar-user-avatar">DR</span>
+                            <span class="user-profile-name">Deepu R.</span>
+                            <span class="user-profile-chevron" aria-hidden="true">⌄</span>
+                        </button>
+                        <div class="user-profile-dropdown" id="userProfileDropdown" role="menu" hidden>
+                            <div class="user-profile-details">
+                                <strong>Deepu R.</strong>
+                                <span>Administrator</span>
+                            </div>
+                            <button class="user-profile-signout" type="button" role="menuitem" onclick="handleDemoSignOut()">↪ <span>Sign out</span></button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dynamic View Body Container -->
+            <div id="mainContent" class="content-area">
+                <!-- Rendered dynamically by app.js -->
+            </div>
+        </main>
+    </div>
+
+    <!-- ==========================================================================
+         Modals: Product Add/Edit, Stock Adjust, Print Invoice
+         ========================================================================== -->
+
+    <!-- 1. Product Add / Edit Modal (Matches Screenshot 5) -->
+    <div id="productModal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" id="prodModalTitle">Add New Product</h3>
+                <button class="modal-close-btn" onclick="closeModal('productModal')">&times;</button>
+            </div>
+            <form id="addProductForm" onsubmit="handleProductFormSubmit(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="prodFormId">
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Select Rack (R1 - R20)</label>
+                            <select id="prodFormRack" class="form-control" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="prodFormRackCell">Rack Cell</label>
+                            <select id="prodFormRackCell" class="form-control" required>
+                                <option value="">Select a cell</option>
+                                <option value="1">Cell 1</option>
+                                <option value="2">Cell 2</option>
+                                <option value="3">Cell 3</option>
+                                <option value="4">Cell 4</option>
+                                <option value="5">Cell 5</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Select Category</label>
+                            <select id="prodFormCategory" class="form-control" required></select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Product Name (English)</label>
+                            <input type="text" id="prodFormNameEn" class="form-control" placeholder="e.g. Syska 9W LED Bulb Cool Day Light" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Product Name (Kannada / ಕನ್ನಡ)</label>
+                            <input type="text" id="prodFormNameKn" class="form-control" placeholder="ಉದಾ. ಸಿಸ್ಕಾ 9W ಎಲ್‌ಇಡಿ ಬಲ್ಬ್">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Brand</label>
+                            <select id="prodFormBrand" class="form-control" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Model Number / Spec</label>
+                            <input type="text" id="prodFormModel" class="form-control" placeholder="e.g. SSK-SRL-9W">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">SKU / Barcode</label>
+                            <input type="text" id="prodFormSku" class="form-control" placeholder="e.g. SYS-9W-LED" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Unit of Measurement</label>
+                            <select id="prodFormUnit" class="form-control">
+                                <option value="Piece">Piece (ಸಂಖ್ಯೆ)</option>
+                                <option value="Coil">Coil (ಸುರುಳಿ / ರೋಲ್)</option>
+                                <option value="Meter">Meter (ಮೀಟರ್)</option>
+                                <option value="Box">Box (ಪೆಟ್ಟಿಗೆ)</option>
+                                <option value="Pack">Pack (ಪ್ಯಾಕ್)</option>
+                                <option value="Set">Set (ಸೆಟ್)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Purchase Price (Cost ₹)</label>
+                            <input type="number" step="0.01" id="prodFormPP" class="form-control" placeholder="65.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Selling Price (Retail ₹)</label>
+                            <input type="number" step="0.01" id="prodFormSP" class="form-control" placeholder="110.00" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Wholesale Price (₹)</label>
+                            <input type="number" step="0.01" id="prodFormWP" class="form-control" placeholder="95.00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Opening Stock Quantity</label>
+                            <input type="number" id="prodFormStock" class="form-control" placeholder="100" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Low Stock Alert Level</label>
+                            <input type="number" id="prodFormMinStock" class="form-control" value="15">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Product Image</label>
+                            <input type="text" id="prodFormImage" class="form-control" placeholder="Image URL (https://... or select file below)">
+                            <input type="file" id="prodFormImageFile" accept="image/*" class="form-control" style="margin-top: 6px; font-size: 0.82rem; padding: 4px 8px;">
+                            <div id="prodFormImagePreviewWrap" style="margin-top: 6px; display: none; align-items: center; gap: 8px;">
+                                <img id="prodFormImagePreview" src="" alt="Preview" style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-light);">
+                                <small style="color: var(--text-muted); font-size: 0.8rem;">Image preview ready</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description & Technical Details</label>
+                        <textarea id="prodFormDesc" class="form-control" rows="2" placeholder="e.g. 9 Watt B22 LED Bulb, 6500K Cool Daylight, 900 Lumens"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('productModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Quick Stock Adjustment Modal -->
+    <div id="stockAdjustModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3 class="modal-title">⚡ Quick Stock Adjustment</h3>
+                <button class="modal-close-btn" onclick="closeModal('stockAdjustModal')">&times;</button>
+            </div>
+            <form id="stockAdjustForm" onsubmit="handleStockAdjustSubmit(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="stockAdjustProdId">
+                    <div style="background: var(--surface-subtle); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+                        <div style="font-weight: 700; font-size: 1rem;" id="stockAdjustProdName">Product Name</div>
+                        <div style="color: var(--text-muted); font-size: 0.88rem; margin-top: 0.2rem;">Current Stock: <b id="stockAdjustCurrent" style="color: var(--primary-indigo);">0</b></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Adjustment Type</label>
+                        <select id="stockAdjustType" class="form-control">
+                            <option value="Stock In">📥 Stock In / Inward Lot (+)</option>
+                            <option value="Stock Out">📤 Stock Out / Deduction (-)</option>
+                            <option value="Damaged">⚠️ Damaged Stock Replacement (-)</option>
+                            <option value="Return">↩️ Customer Return (+)</option>
+                            <option value="Adjustment">⚙️ Audit Physical Count Correction</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Quantity to Add / Deduct</label>
+                        <input type="number" id="stockAdjustDelta" class="form-control" placeholder="10" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Reason / Reference</label>
+                        <input type="text" id="stockAdjustReason" class="form-control" placeholder="e.g. Counter manual stock reconciliation">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('stockAdjustModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Stock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Supplier Add / Edit Modal -->
+    <div id="supplierModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="supplierModalTitle">Add Supplier</h3>
+                <button class="modal-close-btn" onclick="closeModal('supplierModal')">&times;</button>
+            </div>
+            <form id="supplierForm" onsubmit="handleSupplierFormSubmit(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="supplierFormId">
+                    <div class="form-group">
+                        <label class="form-label" for="supplierFormName">Company Name</label>
+                        <input id="supplierFormName" class="form-control" required>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="supplierFormContact">Contact Person</label>
+                            <input id="supplierFormContact" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="supplierFormPhone">Phone</label>
+                            <input id="supplierFormPhone" type="tel" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="supplierFormEmail">Email</label>
+                            <input id="supplierFormEmail" type="email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="supplierFormGstin">GSTIN</label>
+                            <input id="supplierFormGstin" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="supplierFormCity">City</label>
+                            <input id="supplierFormCity" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="supplierFormBalance">Outstanding Balance (₹)</label>
+                            <input id="supplierFormBalance" type="number" min="0" step="0.01" value="0" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="supplierFormAddress">Address</label>
+                        <textarea id="supplierFormAddress" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('supplierModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Supplier</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Price Edit Modal -->
+    <div id="priceModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Product Price</h3>
+                <button class="modal-close-btn" onclick="closeModal('priceModal')">&times;</button>
+            </div>
+            <form id="priceForm" onsubmit="handlePriceFormSubmit(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="priceFormProductId">
+                    <div class="form-group">
+                        <label class="form-label" for="priceFormProductName">Product Name</label>
+                        <input id="priceFormProductName" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="priceFormSelling">Price (₹)</label>
+                        <input id="priceFormSelling" type="number" min="0" step="0.01" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('priceModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Prices</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Professional Tax Invoice Printable Modal -->
+    <div id="invoicePrintModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 780px;">
+            <div class="modal-header no-print">
+                <h3 class="modal-title">🧾 Tax Invoice Preview</h3>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-primary btn-sm" onclick="printCurrentInvoice()">🖨️ Print / Save PDF</button>
+                    <button class="modal-close-btn" onclick="closeModal('invoicePrintModal')">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body" id="invoiceModalBody" style="padding: 0;">
+                <!-- Dynamically populated invoice HTML -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Purchase Order Items Modal -->
+    <div id="purchaseItemsModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 720px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="purchaseItemsModalTitle">📦 Purchase Order Items</h3>
+                <button class="modal-close-btn" onclick="closeModal('purchaseItemsModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="purchaseItemsModalBody">
+                <!-- Dynamically populated purchase items -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('purchaseItemsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/i18n.js?v=6"></script>
+    <script src="js/search.js?v=6"></script>
+    <script src="js/db.js?v=6"></script>
+    <script src="js/api.js?v=6"></script>
+    <script src="js/app.js?v=6"></script>
+    <script src="js/admin-login.js?v=6"></script>
+</body>
+</html>

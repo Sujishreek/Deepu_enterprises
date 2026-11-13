@@ -1,15 +1,3 @@
-
-/* ---------- Smooth Rotating Logo Loader Dismissal ---------- */
-function hideSiteLoader() {
-  const loader = document.getElementById("siteLoadingScreen");
-  if (loader && !loader.classList.contains("is-hidden")) {
-    loader.classList.add("is-hidden");
-    setTimeout(() => {
-      if (loader && loader.parentNode) loader.remove();
-    }, 450);
-  }
-}
-window.addEventListener("load", hideSiteLoader);
 /* Deepu Enterprises — customer website.
    Connected to the SAME Google Apps Script backend and Google Sheets database
    as the Admin Dashboard (Spreadsheet ID: 1jUPjOacuZw0sLD1EAfAar9FphcZCwdy8PkvQNsRG-98).
@@ -76,6 +64,10 @@ const TX = {
   added: "Added to your cart",
   quote_ok: "Quote request sent. We will contact you soon.", dealer_ok: "Application submitted successfully. We will contact you.",
   contact_ok: "Thank you. Your enquiry was sent.",
+  contact_form_p: "Tell us what you need and we will get back to you.",
+  success_title: "Thank you!", success_ok: "OK",
+  success_enquiry: "Thanks for the enquiry. Your application was submitted successfully. We will contact you.",
+  success_dealer: "Thanks for applying. Your application was submitted successfully. We will contact you.",
   signin: "Admin sign in", signin_p: "Access inventory and business operations.", f_user: "Email / username", f_pass: "Password",
   signin_btn: "Sign in", signin_hint: "Demo admin: admin@deepu.local / Demo@12345.", signin_fail: "Incorrect username or password.",
   wa_text: "Hi Deepu Enterprises, I am checking your online catalog and would like to enquire about bulk prices.",
@@ -162,6 +154,10 @@ const TX = {
   added: "ಕಾರ್ಟ್‌ಗೆ ಸೇರಿಸಲಾಗಿದೆ",
   quote_ok: "ಕೋಟ್ ವಿನಂತಿ ಕಳುಹಿಸಲಾಗಿದೆ. ನಾವು ಶೀಘ್ರದಲ್ಲೇ ಸಂಪರ್ಕಿಸುತ್ತೇವೆ.", dealer_ok: "ಅರ್ಜಿ ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಕೆಯಾಗಿದೆ. ನಾವು ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತೇವೆ.",
   contact_ok: "ಧನ್ಯವಾದಗಳು. ನಿಮ್ಮ ವಿಚಾರಣೆ ಕಳುಹಿಸಲಾಗಿದೆ.",
+  contact_form_p: "ನಿಮಗೆ ಬೇಕಾದುದನ್ನು ತಿಳಿಸಿ, ನಾವು ಸಂಪರ್ಕಿಸುತ್ತೇವೆ.",
+  success_title: "ಧನ್ಯವಾದಗಳು!", success_ok: "ಸರಿ",
+  success_enquiry: "ವಿಚಾರಣೆಗಾಗಿ ಧನ್ಯವಾದಗಳು. ನಿಮ್ಮ ಅರ್ಜಿ ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಕೆಯಾಗಿದೆ. ನಾವು ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತೇವೆ.",
+  success_dealer: "ಅರ್ಜಿ ಸಲ್ಲಿಸಿದ್ದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು. ನಿಮ್ಮ ಅರ್ಜಿ ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಕೆಯಾಗಿದೆ. ನಾವು ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತೇವೆ.",
   signin: "ಅಡ್ಮಿನ್ ಸೈನ್ ಇನ್", signin_p: "ಇನ್ವೆಂಟರಿ ಮತ್ತು ವ್ಯವಹಾರ ನಿರ್ವಹಣೆಗೆ ಪ್ರವೇಶಿಸಿ.", f_user: "ಇಮೇಲ್ / ಬಳಕೆದಾರ ಹೆಸರು", f_pass: "ಪಾಸ್‌ವರ್ಡ್",
   signin_btn: "ಸೈನ್ ಇನ್", signin_hint: "ಡೆಮೊ ಅಡ್ಮಿನ್: admin@deepu.local / Demo@12345.", signin_fail: "ತಪ್ಪಾದ ಬಳಕೆದಾರ ಹೆಸರು ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್.",
   wa_text: "ನಮಸ್ಕಾರ ದೀಪು ಎಂಟರ್‌ಪ್ರೈಸಸ್, ನಿಮ್ಮ ಆನ್‌ಲೈನ್ ಕ್ಯಾಟಲಾಗ್ ನೋಡಿದೆ. ಸಗಟು ಬೆಲೆಗಳ ಬಗ್ಗೆ ವಿಚಾರಿಸಲು ಬಯಸುತ್ತೇನೆ.",
@@ -1004,15 +1000,6 @@ async function executeOrderTrack() {
 
   // 2. Query Google Apps Script directly
   notify("Checking live status…");
-  const resBoxLoading = $("#trackResultContainer");
-  if (resBoxLoading) {
-    resBoxLoading.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 16px;gap:12px;text-align:center;">
-        <img src="assets/images/deepu-logo.png" alt="Loading..." class="rotating-logo-spinner" style="width:48px;height:48px;">
-        <span style="font-weight:600;font-size:14px;color:var(--head-blue, #4763AC);">${tr("track_loading") || "Checking live status from database..."}</span>
-      </div>
-    `;
-  }
   const remote = await fetchRemoteOrderStatus(q);
   if (remote) {
     openTrackOrderModal(remote.order_id);
@@ -1026,15 +1013,6 @@ async function executeOrderTrack() {
 
 async function refreshOrderStatus(orderId) {
   notify("Refreshing status…");
-  const resBoxRefresh = $("#trackResultContainer");
-  if (resBoxRefresh) {
-    resBoxRefresh.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;gap:12px;text-align:center;">
-        <img src="assets/images/deepu-logo.png" alt="Loading..." class="rotating-logo-spinner" style="width:44px;height:44px;">
-        <span style="font-weight:600;font-size:14px;color:var(--head-blue, #4763AC);">Refreshing order status...</span>
-      </div>
-    `;
-  }
   const remote = await fetchRemoteOrderStatus(orderId);
   if (remote) {
     notify("Status updated!");
@@ -1077,6 +1055,19 @@ async function saveEnquiry(e) {
   reload();
 }
 
+function showSuccessPopup(key) {
+  const pop = $("#successPopup"); if (!pop) return notify(tr(key));
+  $("#successText").textContent = tr(key);
+  $("#successTitle").textContent = tr("success_title");
+  $("#successClose").textContent = tr("success_ok");
+  pop.hidden = false; requestAnimationFrame(() => pop.classList.add("show"));
+  const close = () => { pop.classList.remove("show"); setTimeout(() => { pop.hidden = true; }, 200); document.removeEventListener("keydown", onKey); };
+  const onKey = ev => { if (ev.key === "Escape") close(); };
+  document.addEventListener("keydown", onKey);
+  pop.onclick = ev => { if (ev.target === pop) close(); };
+  $("#successClose").onclick = close; $("#successClose").focus();
+}
+
 function bindForms() {
   const dealerForm = $("#dealerForm");
   if (dealerForm) {
@@ -1096,7 +1087,8 @@ function bindForms() {
         message: "Products of interest: " + (f.interest || "—")
       });
       const msg = $("#dealerMessage");
-      if (msg) msg.textContent = tr("dealer_ok");
+      if (msg) msg.textContent = "";
+      showSuccessPopup("success_dealer");
       e.target.reset();
     });
   }
@@ -1115,7 +1107,8 @@ function bindForms() {
         message: f.message
       });
       const msg = $("#contactMessage");
-      if (msg) msg.textContent = tr("contact_ok");
+      if (msg) msg.textContent = "";
+      showSuccessPopup("success_enquiry");
       e.target.reset();
     });
   }
@@ -1344,7 +1337,6 @@ function bindEvents() {
 
 document.addEventListener("DOMContentLoaded", () => {
   applyStatic();
-  setTimeout(hideSiteLoader, 650);
   renderAll();
   bindForms();
   bindEvents();

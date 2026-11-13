@@ -6,23 +6,13 @@
   <meta name="description" content="Deepu Enterprises – electrical and electronics wholesale & retail supply in Channarayapatna, Hassan district.">
   <title>Deepu Enterprises | Electrical & Electronics Supply</title>
   <link rel="icon" href="assets/images/deepu-logo.png">
-  <link rel="stylesheet" href="css/styles.css?v=11">
-  <link rel="stylesheet" href="css/user-extra.css?v=11">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/user-extra.css">
   <link rel="stylesheet" href="../design-system.css">
 </head>
 <body>
-<!-- Smooth Rotating Brand Logo Loading Screen -->
-<div class="site-loading-screen" id="siteLoadingScreen" role="status" aria-live="polite">
-  <div class="site-loading-card">
-    <div class="site-loading-spinner-wrap">
-      <img src="assets/images/deepu-logo.png?v=2" alt="Loading Deepu Enterprises..." class="site-loading-logo">
-    </div>
-    <div class="site-loading-title">Deepu Enterprises</div>
-    <div class="site-loading-caption">Powering businesses · Strengthening relationships</div>
-  </div>
-</div>
 <header class="site-header">
-  <a class="brand" href="#home"><img src="assets/images/deepu-logo.png?v=2" alt="Deepu Enterprises logo"><span>DE<small data-shop="tagline_short">ENTERPRISES & DISTRIBUTORS</small></span></a>
+  <a class="brand" href="#home"><img src="assets/images/deepu-logo-transparent.png" alt="Deepu Enterprises logo"><span>DE<small data-shop="tagline_short">ENTERPRISES & DISTRIBUTORS</small></span></a>
   <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button>
   <nav id="mainNav">
     <a href="#home" data-i18n="nav_home">Home</a><a href="#sections" data-i18n="nav_sections">Shop by Section</a><a href="#catalog" data-i18n="nav_catalog">Catalog</a>
@@ -122,16 +112,29 @@
     <div class="contact-item"><span>⌖</span><div><small data-i18n="c_loc">BUSINESS LOCATION</small><b data-shop="address">—</b></div></div>
     <div class="contact-item"><span>◎</span><div><small>WHATSAPP</small><b data-i18n="c_wa">Chat with us on WhatsApp</b></div></div>
   </div>
-  <form class="form-card contact-form" id="contactForm"><h3 data-i18n="contact_form_h">Send an enquiry</h3><label><span data-i18n="f_name">Your name</span><input name="name" required></label><label><span data-i18n="f_phone">Phone number</span><input name="phone" required pattern="[6-9][0-9]{9}" data-i18n-ph="ph_mobile" placeholder="10-digit mobile"></label><label><span data-i18n="f_email">Email</span><input name="email" type="email"></label><label><span data-i18n="f_type">Enquiry type</span><select name="type"><option value="General" data-i18n="t_general">General</option><option value="Product Enquiry" data-i18n="t_product">Product Enquiry</option><option value="Bulk Order" data-i18n="t_bulk">Bulk Order</option><option value="Distribution" data-i18n="t_dist">Distribution</option></select></label><label><span data-i18n="f_message">Message</span><textarea name="message" rows="4" required></textarea></label><button class="btn btn-primary" data-i18n="send_enquiry">Send enquiry</button><p class="form-message" id="contactMessage" aria-live="polite"></p></form></div>
+  <form class="form-card contact-form" id="contactForm"><div><h3 data-i18n="contact_form_h">Send an enquiry</h3><p data-i18n="contact_form_p">Tell us what you need and we will get back to you.</p></div><div class="form-grid">
+    <label><span data-i18n="f_name">Your name</span><input name="name" required maxlength="100"></label><label><span data-i18n="f_phone">Phone number</span><input name="phone" required pattern="[6-9][0-9]{9}" data-i18n-ph="ph_mobile" placeholder="10-digit mobile"></label>
+    <label><span data-i18n="f_email">Email</span><input name="email" type="email"></label><label><span data-i18n="f_type">Enquiry type</span><select name="type"><option value="General" data-i18n="t_general">General</option><option value="Product Enquiry" data-i18n="t_product">Product Enquiry</option><option value="Bulk Order" data-i18n="t_bulk">Bulk Order</option><option value="Distribution" data-i18n="t_dist">Distribution</option></select></label>
+    <label class="full"><span data-i18n="f_message">Message</span><textarea name="message" rows="4" required></textarea></label>
+  </div><button class="btn btn-primary" type="submit" data-i18n="send_enquiry">Send enquiry</button><p class="form-message" id="contactMessage" aria-live="polite"></p></form></div>
 </section>
 </main>
 
-<footer class="footer"><div class="footer-brand"><img src="assets/images/deepu-logo.png?v=2" alt=""><div><b data-shop="name_upper">DEEPU ENTERPRISES</b><small data-shop="tagline_upper">ELECTRICAL & ELECTRONICS</small></div></div><p data-i18n="footer_text">Distribution and supply support for electricians, retailers and businesses.</p><div class="footer-bottom"><span>© <span id="year"></span> Deepu Enterprises. <span data-i18n="rights">All rights reserved.</span></span><span>contact@deepuenterprises.com</span><button class="text-button" onclick="openTrackOrderModal()" data-i18n="nav_track_order">Track Order</button><button class="text-button" data-view="admin-login" data-i18n="admin_link">Admin</button></div></footer>
+<footer class="footer"><div class="footer-brand"><img src="assets/images/deepu-logo.png" alt=""><div><b data-shop="name_upper">DEEPU ENTERPRISES</b><small data-shop="tagline_upper">ELECTRICAL & ELECTRONICS</small></div></div><p data-i18n="footer_text">Distribution and supply support for electricians, retailers and businesses.</p><div class="footer-bottom"><span>© <span id="year"></span> Deepu Enterprises. <span data-i18n="rights">All rights reserved.</span></span><span>contact@deepuenterprises.com</span><button class="text-button" onclick="openTrackOrderModal()" data-i18n="nav_track_order">Track Order</button><button class="text-button" data-view="admin-login" data-i18n="admin_link">Admin</button></div></footer>
 <a class="whatsapp-float" id="whatsappLink" href="#" target="_blank" rel="noopener" aria-label="WhatsApp">◔</a>
 
 <div class="modal-backdrop" id="modalBackdrop"><section class="modal" role="dialog" aria-modal="true"><button class="modal-close" id="modalClose" aria-label="Close">×</button><div id="modalContent"></div></section></div>
 <div class="toast" id="toast" role="status"></div>
 <script src="js/search.js?v=9"></script>
 <script src="js/db.js?v=9"></script>
-<script src="js/user.js?v=11"></script>
+<script src="js/user.js?v=9"></script>
+<script src="js/assistant.js?v=1"></script>
+<div class="success-overlay" id="successPopup" role="dialog" aria-modal="true" aria-labelledby="successTitle" hidden>
+  <div class="success-card">
+    <div class="success-check"><svg viewBox="0 0 52 52" width="56" height="56" aria-hidden="true"><circle cx="26" cy="26" r="24" fill="none" stroke="#13A653" stroke-width="3" class="sc-ring"/><path d="M15 27l8 8 15-17" fill="none" stroke="#13A653" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="sc-tick"/></svg></div>
+    <h3 id="successTitle" data-i18n="success_title">Thank you!</h3>
+    <p id="successText" data-i18n="success_enquiry">Thanks for the enquiry. Your application was submitted successfully. We will contact you.</p>
+    <button type="button" class="btn btn-primary" id="successClose" data-i18n="success_ok">OK</button>
+  </div>
+</div>
 </body></html>
