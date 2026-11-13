@@ -1,3 +1,15 @@
+
+/* ---------- Smooth Rotating Logo Loader Dismissal ---------- */
+function hideSiteLoader() {
+  const loader = document.getElementById("siteLoadingScreen");
+  if (loader && !loader.classList.contains("is-hidden")) {
+    loader.classList.add("is-hidden");
+    setTimeout(() => {
+      if (loader && loader.parentNode) loader.remove();
+    }, 450);
+  }
+}
+window.addEventListener("load", hideSiteLoader);
 /* Deepu Enterprises — customer website.
    Connected to the SAME Google Apps Script backend and Google Sheets database
    as the Admin Dashboard (Spreadsheet ID: 1jUPjOacuZw0sLD1EAfAar9FphcZCwdy8PkvQNsRG-98).
@@ -992,6 +1004,15 @@ async function executeOrderTrack() {
 
   // 2. Query Google Apps Script directly
   notify("Checking live status…");
+  const resBoxLoading = $("#trackResultContainer");
+  if (resBoxLoading) {
+    resBoxLoading.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 16px;gap:12px;text-align:center;">
+        <img src="assets/images/deepu-logo.png" alt="Loading..." class="rotating-logo-spinner" style="width:48px;height:48px;">
+        <span style="font-weight:600;font-size:14px;color:var(--head-blue, #4763AC);">${tr("track_loading") || "Checking live status from database..."}</span>
+      </div>
+    `;
+  }
   const remote = await fetchRemoteOrderStatus(q);
   if (remote) {
     openTrackOrderModal(remote.order_id);
@@ -1005,6 +1026,15 @@ async function executeOrderTrack() {
 
 async function refreshOrderStatus(orderId) {
   notify("Refreshing status…");
+  const resBoxRefresh = $("#trackResultContainer");
+  if (resBoxRefresh) {
+    resBoxRefresh.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;gap:12px;text-align:center;">
+        <img src="assets/images/deepu-logo.png" alt="Loading..." class="rotating-logo-spinner" style="width:44px;height:44px;">
+        <span style="font-weight:600;font-size:14px;color:var(--head-blue, #4763AC);">Refreshing order status...</span>
+      </div>
+    `;
+  }
   const remote = await fetchRemoteOrderStatus(orderId);
   if (remote) {
     notify("Status updated!");
@@ -1314,6 +1344,7 @@ function bindEvents() {
 
 document.addEventListener("DOMContentLoaded", () => {
   applyStatic();
+  setTimeout(hideSiteLoader, 650);
   renderAll();
   bindForms();
   bindEvents();

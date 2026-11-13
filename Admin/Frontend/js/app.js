@@ -848,8 +848,19 @@ async function renderProductsView() {
                             </div>
                             ${cellProducts.map(product => `
                                 <div class="rack-cell-product">
-                                    <div style="font-weight: 700;">${isKn ? (product.name_kn || product.name) : product.name}</div>
-                                    <small style="color: var(--text-muted);">${product.sku} · ${product.brand_name || "Generic"}</small>
+                                    <div class="rack-cell-product-main">
+                                        <div class="rack-cell-product-thumb-wrap">
+                                            <img src="${product.image_url || 'https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200'}" 
+                                                 alt="${product.name}" 
+                                                 class="rack-cell-product-thumb" 
+                                                 loading="lazy" 
+                                                 onerror="this.src='https://images.unsplash.com/photo-1550524514-9b6058e59265?w=200'">
+                                        </div>
+                                        <div class="rack-cell-product-info">
+                                            <div class="rack-cell-product-title" title="${product.name}">${isKn ? (product.name_kn || product.name) : product.name}</div>
+                                            <small class="rack-cell-product-sku">${product.sku} · ${product.brand_name || "Generic"}</small>
+                                        </div>
+                                    </div>
                                     <div style="display: flex; justify-content: space-between; margin: 0.4rem 0;">
                                         <span>${isKn ? "ಸ್ಟಾಕ್" : "Stock"}: <b>${product.stock_quantity} ${product.unit || "Piece"}</b></span>
                                         <b style="color: var(--primary-indigo);">₹ ${product.selling_price}</b>
